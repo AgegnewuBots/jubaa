@@ -53,15 +53,29 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if true;
+      // Users can get/create/update their own profile
+      allow get, create, update: if request.auth != null && request.auth.uid == userId;
+      // Global read access for leaderboard lists
+      allow list: if true;
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if false;
     }
 
     match /transactions/{txId} {
-      allow read, write: if true;
+      // Users can only read and write their own transactions
+      allow read, write: if request.auth != null && 
+        ((resource == null || resource.data.user_id == request.auth.uid) && 
+         (request.resource == null || request.resource.data.user_id == request.auth.uid));
     }
 
     match /game_history/{histId} {
-      allow read, write: if true;
+      // Users can only read and write their own game history
+      allow read, write: if request.auth != null && 
+        ((resource == null || resource.data.user_id == request.auth.uid) && 
+         (request.resource == null || request.resource.data.user_id == request.auth.uid));
     }
   }
 }

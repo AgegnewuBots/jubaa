@@ -7,5 +7,6 @@
   "storageBucket": "gen-lang-client-0741370314.firebasestorage.app",
   "messagingSenderId": "538626766288",
   "measurementId": "",
-  "oAuthClientId": "538626766288-gt4ftoesh9u823klq60iukb8vdldj7mk.apps.googleusercontent.com"
+  "oAuthClientId": "538626766288-gt4ftoesh9u823klq60iukb8vdldj7mk.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

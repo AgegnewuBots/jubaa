@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Juba Bingo</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- Firebase SDK Client Compatibility Libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -606,9 +610,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 
         <div class="auth-form active" id="form-login">
           <div class="input-group">
-            <label>PHONE OR TELEGRAM ID (ስልክ ወይም መለያ)</label>
+            <label>EMAIL OR PHONE NUMBER (ኢሜይል ወይም ስልክ ቁጥር)</label>
             <div class="input-wrap">
-              <input type="text" id="login-id" class="auth-input" placeholder="e.g. 0912345678 or 724819">
+              <input type="text" id="login-id" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678">
             </div>
           </div>
           <div class="input-group">
@@ -629,9 +633,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
             </div>
           </div>
           <div class="input-group">
-            <label>PHONE NUMBER (ስልክ ቁጥር)</label>
+            <label>EMAIL OR PHONE NUMBER (ኢሜይል ወይም ስልክ ቁጥር)</label>
             <div class="input-wrap">
-              <input type="tel" id="reg-phone" class="auth-input" placeholder="e.g. 0912345678">
+              <input type="text" id="reg-phone" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678">
             </div>
           </div>
           <div class="input-group">
@@ -1031,11 +1035,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
             <span style="font-size:12px; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:0.5px;" id="lbl-wal-info-title">Deposit & Withdrawal</span>
           </div>
           <p style="font-size:11px; color:var(--muted); line-height:1.5; margin:0 0 10px 0;" id="lbl-wal-info-desc">
-            To ensure security, deposits and withdrawals are processed manually:<br>
+            To ensure security, deposits and withdrawals can be submitted here or manually:<br>
             <strong>Mini App Players:</strong> Please use our official Telegram bot commands.<br>
-            <strong>Web Players:</strong> Contact our administrator directly on Telegram to load your wallet or cash out instantly.
+            <strong>Web Players:</strong> Request instantly below, or contact our administrator on Telegram.
           </p>
-          <div style="margin-top:15px;">
+          <div style="margin-top:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button onclick="openClientDepositModal()" style="display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:var(--green); border-radius:10px; padding:11px; font-size:12px; font-weight:800; cursor:pointer; transition:transform 0.15s; border-style:solid;">
+              <i class="fa-solid fa-circle-arrow-down"></i> <span id="lbl-btn-req-dep">Deposit (ገንዘብ አስገባ)</span>
+            </button>
+            <button onclick="openClientWithdrawModal()" style="display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; border-radius:10px; padding:11px; font-size:12px; font-weight:800; cursor:pointer; transition:transform 0.15s; border-style:solid;">
+              <i class="fa-solid fa-circle-arrow-up"></i> <span id="lbl-btn-req-with">Withdraw (ገንዘብ አውጣ)</span>
+            </button>
+          </div>
+          <div style="margin-top:10px;">
             <a href="https://t.me/one_day_82" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--orange); color:#fff; border:none; border-radius:10px; padding:11px; font-size:13px; font-weight:800; cursor:pointer; text-decoration:none; transition:transform 0.15s; text-align:center;">
               <i class="fa-brands fa-telegram" style="font-size:16px;"></i> <span id="lbl-wal-contact-admin">CONTACT ADMIN (አድሚን ያነጋግሩ)</span>
             </a>
@@ -1083,6 +1095,118 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       </div>
     </div>
   </div>
+  
+  <!-- Client Deposit Modal -->
+  <div class="rules-screen" id="client-deposit-modal" style="z-index: 1000;">
+    <div class="rules-header">
+      <button class="rules-back" onclick="closeClientDepositModal()"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="rules-header-title">Deposit / ገንዘብ ማስገቢያ</div>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; overflow-y:auto;">
+      <div class="auth-box" style="margin-top:auto; margin-bottom:auto; max-width:380px;">
+        <div style="font-size:40px; color:var(--green); margin-bottom:12px;"><i class="fa-solid fa-circle-arrow-down"></i></div>
+        <div class="auth-title">REQUEST DEPOSIT (ገንዘብ ያስገቡ)</div>
+        <p style="font-size:11px; color:var(--muted); text-align:center; margin-bottom:16px; line-height:1.4;">
+          Please deposit the funds using Telebirr or CBE, then enter the amount and your reference phone below.<br>
+          እባክዎን በቴሌብር ወይም በንግድ ባንክ ያስገቡና ያስገቡትን የገንዘብ መጠንና ስልክዎን ከታች ይመዝግቡ።
+        </p>
+        
+        <div class="input-group" style="margin-bottom:12px;">
+          <label>DEPOSIT AMOUNT (የገንዘብ መጠን) - Min 50 Br</label>
+          <div class="input-wrap">
+            <input type="number" id="dep-req-amount" class="auth-input" placeholder="50" min="50" value="50">
+          </div>
+        </div>
+        
+        <div class="input-group" style="margin-bottom:16px;">
+          <label>TRANSFER REFERENCE / PHONE (የክፍያ ስልክ ቁጥር)</label>
+          <div class="input-wrap">
+            <input type="text" id="dep-req-ref" class="auth-input" placeholder="09xxxxxxxx">
+          </div>
+        </div>
+        
+        <button class="auth-btn" style="background-color:var(--green);" onclick="submitClientDeposit()">SUBMIT DEPOSIT REQUEST</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Withdrawal Modal -->
+  <div class="rules-screen" id="client-withdraw-modal" style="z-index: 1000;">
+    <div class="rules-header">
+      <button class="rules-back" onclick="closeClientWithdrawModal()"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="rules-header-title">Withdrawal / ገንዘብ ማውጫ</div>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; overflow-y:auto;">
+      <div class="auth-box" style="margin-top:auto; margin-bottom:auto; max-width:380px;">
+        <div style="font-size:40px; color:#ef4444; margin-bottom:12px;"><i class="fa-solid fa-circle-arrow-up"></i></div>
+        <div class="auth-title">REQUEST WITHDRAWAL (ገንዘብ ያውጡ)</div>
+        <p style="font-size:11px; color:var(--muted); text-align:center; margin-bottom:16px; line-height:1.4;">
+          Your cashout request will be sent to the administrator for verification.<br>
+          የማውጣት ጥያቄዎ በአስተዳዳሪው ዘንድ ተረጋግጦ ይከፈልዎታል።
+        </p>
+        
+        <div class="input-group" style="margin-bottom:12px;">
+          <label>WITHDRAW AMOUNT (የማውጫ መጠን) - Min 150 Br</label>
+          <div class="input-wrap">
+            <input type="number" id="with-req-amount" class="auth-input" placeholder="150" min="150" value="150">
+          </div>
+        </div>
+        
+        <div class="input-group" style="margin-bottom:16px;">
+          <label>RECEIVER ACCOUNT / PHONE (ገንዘብ የሚቀበሉበት ስልክ)</label>
+          <div class="input-wrap">
+            <input type="text" id="with-req-phone" class="auth-input" placeholder="09xxxxxxxx">
+          </div>
+        </div>
+        
+        <button class="auth-btn" style="background-color:#ef4444;" onclick="submitClientWithdraw()">SUBMIT WITHDRAWAL REQUEST</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Server Broadcast Top Notice Bar -->
+  <div id="broadcast-bar" style="display:none; position:fixed; top:0; left:0; width:100%; z-index:9999; background:linear-gradient(90deg, #ff6b00 0%, #ff8c00 100%); color:#fff; padding:10px 15px; font-size:12px; font-weight:700; text-align:center; box-shadow:0 4px 15px rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; gap:8px;">
+    <i class="fa-solid fa-bullhorn" style="animation: bellPulse 1.5s infinite;"></i>
+    <span id="broadcast-bar-text">Announcements loading...</span>
+  </div>
+
+  <!-- Server Broadcast Modal Popup -->
+  <div class="rules-screen" id="broadcast-modal" style="z-index: 10100; background:rgba(8,8,22,0.95);">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;">
+      <div class="auth-box" style="border: 1px solid var(--orange); box-shadow: 0 0 20px rgba(255,107,0,0.2);">
+        <div style="font-size:44px; color:var(--orange); margin-bottom:12px;"><i class="fa-solid fa-bullhorn"></i></div>
+        <div class="auth-title">ANNOUNCEMENT / ማሳሰቢያ</div>
+        <p style="font-size:13px; color:#fff; text-align:center; margin-bottom:20px; line-height:1.6; word-break:break-word;" id="broadcast-modal-text">No active announcements</p>
+        <button class="auth-btn" style="background-color:var(--orange);" onclick="closeBroadcastModal()">DISMISS (እሺ)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Suspended/Banned Screen -->
+  <div class="rules-screen" id="banned-overlay" style="z-index: 11000; background:rgba(8,8,22,0.98); display:none;">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center;">
+      <div style="font-size:72px; color:#ef4444; filter: drop-shadow(0 0 15px rgba(239,68,68,0.5)); margin-bottom:20px;"><i class="fa-solid fa-user-slash"></i></div>
+      <div style="font-size:28px; font-weight:800; color:#fff; margin-bottom:8px;">Account Suspended</div>
+      <p style="font-size:14px; color:var(--muted); max-width:400px; line-height:1.6;" id="banned-reason-text">Your account has been suspended for violating our terms of service.<br>የእርስዎ መለያ ደንቦችን በመተላለፍዎ ታግዷል።</p>
+    </div>
+  </div>
+
+  <!-- Under Maintenance Screen -->
+  <div class="rules-screen" id="maintenance-overlay" style="z-index: 11000; background:rgba(8,8,22,0.98); display:none;">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center;">
+      <div style="font-size:72px; color:var(--orange); filter: drop-shadow(0 0 15px rgba(255,107,0,0.5)); margin-bottom:20px;"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+      <div style="font-size:28px; font-weight:800; color:#fff; margin-bottom:8px;">Under Maintenance</div>
+      <p style="font-size:14px; color:var(--muted); max-width:400px; line-height:1.6;">Our platform is currently undergoing scheduled maintenance. We will be back online shortly!<br>መድረካችን በአሁኑ ጊዜ የጥገና ሥራ ላይ ነው። በቅርቡ እንመለሳለን!</p>
+    </div>
+  </div>
+
+  <style>
+    @keyframes bellPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+  </style>
 </div>
 <div class="paused-overlay" id="paused-overlay"><div class="p-icon"><i class="fa-solid fa-circle-pause" style="color:var(--yellow); filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i></div><div class="p-title">Game Paused</div><div class="p-sub">ጨዋታው ቆሟል። እባክዎ ይጠብቁ…</div></div>
 <div class="cancelled-overlay" id="cancelled-overlay"><div class="c-icon"><i class="fa-solid fa-circle-xmark" style="color:#ef4444; filter: drop-shadow(0 0 15px rgba(239,68,68,0.5));"></i></div><div class="c-title">Game Cancelled</div><div class="c-sub">ጨዋታው ተሰርዟል። ሂሳብዎ ይመለሳል።<br>The game was cancelled by admin.</div><button class="c-btn" onclick="dismissCancel()">OK — Back to Home</button></div>
@@ -1145,6 +1269,47 @@ if (window.Telegram && window.Telegram.WebApp) {
     };
   }
 }
+
+// Initialize Firebase client Web SDK
+var firebaseConfig = {
+  apiKey: "AIzaSyA8ldZk0fAwPrXhwsCxsZQgvcQiYc_1ww4",
+  authDomain: "gen-lang-client-0741370314.firebaseapp.com",
+  projectId: "gen-lang-client-0741370314",
+  storageBucket: "gen-lang-client-0741370314.firebasestorage.app",
+  messagingSenderId: "538626766288",
+  appId: "1:538626766288:web:b3e471a2e321532fbbb5d5"
+};
+firebase.initializeApp(firebaseConfig);
+var fAuth = firebase.auth();
+var fDb = firebase.firestore();
+
+// Keep a flag to prevent multiple triggerings during state change
+var isFAuthInit = false;
+
+fAuth.onAuthStateChanged(function(firebaseUser) {
+  var isTgMiniApp = Boolean(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user);
+  if (firebaseUser) {
+    tgUserId = firebaseUser.uid;
+    tgUser = {
+      id: firebaseUser.uid,
+      first_name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+      username: firebaseUser.email
+    };
+    localStorage.setItem('bingio_user_id', firebaseUser.uid);
+    updateStakeProfile();
+    if (!isFAuthInit) {
+      isFAuthInit = true;
+      appInit();
+    }
+  } else {
+    if (!isTgMiniApp) {
+      tgUserId = null;
+      tgUser = null;
+      localStorage.removeItem('bingio_user_id');
+      showScreen('screen-auth');
+    }
+  }
+});
 
 var API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
   ? 'http://localhost:3000'
@@ -1821,29 +1986,43 @@ async function doLogin() {
   var id = document.getElementById('login-id').value.trim();
   var pass = document.getElementById('login-pass').value.trim();
   if (!id || !pass) {
-    alert('Please enter Phone/Telegram ID and Password (እባክዎ ስልክ/መለያ እና የይለፍ ቃል ያስገቡ)');
+    alert('Please enter Email/Phone and Password (እባክዎ ኢሜይል/ስልክ እና የይለፍ ቃል ያስገቡ)');
     return;
   }
   var btn = document.querySelector('#form-login .auth-btn');
   btn.textContent = 'Verifying...';
+  
+  var email = id;
+  if (id.indexOf('@') === -1) {
+    email = id.replace(/[^a-zA-Z0-9]/g, '') + '@juba.bingo';
+  }
+
   try {
-    var res = await fetch(API_BASE + '/api/auth/login', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ user_id: id, password: pass })
-    });
-    var data = await res.json();
-    if (data.success) {
-      localStorage.setItem('bingio_user_id', data.user_id);
-      tgUserId = data.user_id;
-      tgUser = { id: tgUserId, first_name: 'Web User', username: tgUserId };
-      updateStakeProfile();
-      appInit(); // Re-run init to load data and switch screen
-    } else {
-      alert(data.error || 'Login failed');
-    }
-  } catch (e) {
-    alert('Network error during login');
+    var userCredential = await fAuth.signInWithEmailAndPassword(email, pass);
+    var firebaseUser = userCredential.user;
+    
+    tgUserId = firebaseUser.uid;
+    tgUser = {
+      id: firebaseUser.uid,
+      first_name: firebaseUser.displayName || id,
+      username: firebaseUser.email
+    };
+    localStorage.setItem('bingio_user_id', firebaseUser.uid);
+    updateStakeProfile();
+    
+    try {
+      await fetch(API_BASE + '/api/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name: tgUser.first_name, phone: firebaseUser.uid, password: pass })
+      });
+    } catch (err) {}
+    
+    await fetchBalance();
+    appInit();
+  } catch (err) {
+    console.error('Firebase sign in error:', err);
+    alert(err.message || 'Login failed');
   }
   btn.textContent = 'ENTER GAME';
 }
@@ -1853,38 +2032,50 @@ async function doRegister() {
   var phone = document.getElementById('reg-phone').value.trim();
   var pass = document.getElementById('reg-pass').value.trim();
   if (!name || !phone || !pass) {
-    alert('Please enter Name, Phone, and Password (እባክዎ ሙሉ ስም፣ ስልክ ቁጥር እና የይለፍ ቃል ያስገቡ)');
+    alert('Please enter Name, Phone/Email, and Password (እባክዎ ሙሉ ስም፣ ስልክ/ኢሜይል እና የይለፍ ቃል ያስገቡ)');
     return;
   }
   var btn = document.querySelector('#form-register .auth-btn');
   btn.textContent = 'Creating...';
+
+  var email = phone;
+  if (phone.indexOf('@') === -1) {
+    email = phone.replace(/[^a-zA-Z0-9]/g, '') + '@juba.bingo';
+  }
+
   try {
+    var userCredential = await fAuth.createUserWithEmailAndPassword(email, pass);
+    var firebaseUser = userCredential.user;
+    
+    await firebaseUser.updateProfile({ displayName: name });
+    
     var res = await fetch(API_BASE + '/api/auth/register', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ name: name, phone: phone, password: pass })
+      body: JSON.stringify({ name: name, phone: firebaseUser.uid, password: pass })
     });
-    var data = await res.json();
-    if (data.success) {
-      localStorage.setItem('bingio_user_id', data.user_id);
-      tgUserId = data.user_id;
-      tgUser = { id: tgUserId, first_name: name, username: phone };
-      updateStakeProfile();
-      appInit(); // Re-run init
-    } else {
-      alert(data.error || 'Registration failed');
-    }
-  } catch (e) {
-    alert('Network error during registration');
+    
+    tgUserId = firebaseUser.uid;
+    tgUser = { id: firebaseUser.uid, first_name: name, username: email };
+    localStorage.setItem('bingio_user_id', firebaseUser.uid);
+    updateStakeProfile();
+    appInit();
+  } catch (err) {
+    console.error('Firebase registration error:', err);
+    alert(err.message || 'Registration failed');
   }
   btn.textContent = 'CREATE ACCOUNT';
 }
 
 function doLogout() {
-  localStorage.removeItem('bingio_user_id');
-  tgUserId = null;
-  tgUser = null;
-  showScreen('screen-auth');
+  fAuth.signOut().then(function() {
+    tgUserId = null;
+    tgUser = null;
+    localStorage.removeItem('bingio_user_id');
+    showScreen('screen-auth');
+  }).catch(function(err) {
+    console.error('Sign out error:', err);
+  });
 }
 
 function copyUserId() {
@@ -1928,6 +2119,146 @@ function closeChangePasswordModal() {
   document.getElementById('change-password-modal').classList.remove('active');
 }
 
+// Client Wallet Request Controls
+function openClientDepositModal() {
+  if (soundOn) sfx.playClick();
+  document.getElementById('dep-req-amount').value = "50";
+  document.getElementById('dep-req-ref').value = "";
+  document.getElementById('client-deposit-modal').classList.add('active');
+}
+
+function closeClientDepositModal() {
+  if (soundOn) sfx.playClick();
+  document.getElementById('client-deposit-modal').classList.remove('active');
+}
+
+async function submitClientDeposit() {
+  if (soundOn) sfx.playClick();
+  var amount = parseFloat(document.getElementById('dep-req-amount').value);
+  var ref = document.getElementById('dep-req-ref').value.trim();
+  
+  if (isNaN(amount) || amount < 50) {
+    alert('Minimum deposit request is 50 ETB. እባክዎ ከ 50 ብር በላይ ያስገቡ።');
+    return;
+  }
+  if (!ref) {
+    alert('Please enter your payment reference phone number. እባክዎ የክፍያ ስልክ ቁጥር ያስገቡ።');
+    return;
+  }
+  
+  try {
+    var res = await fetch(API_BASE + '/api/client/deposit', {
+      method: 'POST',
+      headers: apiHeaders,
+      body: JSON.stringify({ user_id: tgUserId, amount: amount, ref_phone: ref })
+    });
+    var data = await res.json();
+    if (data.success) {
+      alert('Deposit request submitted successfully! Pending approval.\nየማስገቢያ ጥያቄዎ በተሳካ ሁኔታ ተልኳል! በአጭር ጊዜ ውስጥ ይረጋገጣል።');
+      closeClientDepositModal();
+      fetchTransactions().then(renderTransactions);
+    } else {
+      alert(data.error || 'Failed to submit deposit request.');
+    }
+  } catch (err) {
+    alert('Server connection error. Please try again.');
+  }
+}
+
+function openClientWithdrawModal() {
+  if (soundOn) sfx.playClick();
+  document.getElementById('with-req-amount').value = "150";
+  document.getElementById('with-req-phone').value = "";
+  document.getElementById('client-withdraw-modal').classList.add('active');
+}
+
+function closeClientWithdrawModal() {
+  if (soundOn) sfx.playClick();
+  document.getElementById('client-withdraw-modal').classList.remove('active');
+}
+
+async function submitClientWithdraw() {
+  if (soundOn) sfx.playClick();
+  var amount = parseFloat(document.getElementById('with-req-amount').value);
+  var phone = document.getElementById('with-req-phone').value.trim();
+  
+  if (isNaN(amount) || amount < 150) {
+    alert('Minimum withdrawal request is 150 ETB. እባክዎ ከ 150 ብር በላይ ማውጣት ይጠይቁ።');
+    return;
+  }
+  if (!phone) {
+    alert('Please enter your receiver phone number. እባክዎ ገንዘብ የሚቀበሉበትን ስልክ ቁጥር ያስገቡ።');
+    return;
+  }
+  
+  try {
+    var res = await fetch(API_BASE + '/api/client/withdraw', {
+      method: 'POST',
+      headers: apiHeaders,
+      body: JSON.stringify({ user_id: tgUserId, amount: amount, receiver_phone: phone })
+    });
+    var data = await res.json();
+    if (data.success) {
+      alert('Withdrawal request submitted successfully! Pending verification.\nየማውጣት ጥያቄዎ በተሳካ ሁኔታ ተልኳል! በአጭር ጊዜ ውስጥ ይረጋገጣል።');
+      closeClientWithdrawModal();
+      fetchTransactions().then(renderTransactions);
+      fetchBalance();
+    } else {
+      alert(data.error || 'Failed to submit withdrawal request.');
+    }
+  } catch (err) {
+    alert('Server connection error. Please try again.');
+  }
+}
+
+// Client Configuration & Broadcast Notice Receivers
+var activeBroadcastId = null;
+
+async function fetchSystemConfig() {
+  try {
+    var res = await fetch(API_BASE + '/api/config');
+    var data = await res.json();
+    if (data.success) {
+      // 1. Handle Maintenance Mode
+      if (data.settings && data.settings.maintenance) {
+        document.getElementById('maintenance-overlay').style.display = 'flex';
+      } else {
+        document.getElementById('maintenance-overlay').style.display = 'none';
+      }
+      
+      // 2. Handle Broadcast Notice
+      if (data.broadcast && data.broadcast.active && data.broadcast.message) {
+        if (data.broadcast.type === 'modal') {
+          // Intrusive Modal Alert
+          var savedDismissedBc = localStorage.getItem('dismissed_broadcast_msg');
+          if (savedDismissedBc !== data.broadcast.message) {
+            document.getElementById('broadcast-modal-text').textContent = data.broadcast.message;
+            document.getElementById('broadcast-modal').classList.add('active');
+          }
+          document.getElementById('broadcast-bar').style.display = 'none';
+        } else {
+          // Standard Text Notice bar
+          document.getElementById('broadcast-bar-text').textContent = data.broadcast.message;
+          document.getElementById('broadcast-bar').style.display = 'flex';
+          document.getElementById('broadcast-modal').classList.remove('active');
+        }
+      } else {
+        document.getElementById('broadcast-bar').style.display = 'none';
+        document.getElementById('broadcast-modal').classList.remove('active');
+      }
+    }
+  } catch (e) {
+    console.error('Failed to sync settings config:', e);
+  }
+}
+
+function closeBroadcastModal() {
+  if (soundOn) sfx.playClick();
+  var bcMsg = document.getElementById('broadcast-modal-text').textContent;
+  localStorage.setItem('dismissed_broadcast_msg', bcMsg);
+  document.getElementById('broadcast-modal').classList.remove('active');
+}
+
 async function saveNewPassword() {
   var oldPass = document.getElementById('old-sec-pass').value.trim();
   var pass = document.getElementById('new-sec-pass').value.trim();
@@ -1935,23 +2266,29 @@ async function saveNewPassword() {
     alert('Please enter both your current password and new password (እባክዎ የአሁኑን እና አዲሱን የይለፍ ቃል ያስገቡ)');
     return;
   }
-  try {
-    var res = await fetch(API_BASE + '/api/auth/set_password', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ user_id: tgUserId, password: pass, old_password: oldPass })
-    });
-    var data = await res.json();
-    if (data.success) {
+  var user = fAuth.currentUser;
+  if (user) {
+    var credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPass);
+    try {
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(pass);
+      
+      // Keep server record in sync
+      await fetch(API_BASE + '/api/auth/set_password', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ user_id: tgUserId, password: pass, old_password: oldPass })
+      });
+      
       alert('Password updated successfully! የይለፍ ቃል ተቀይሯል።');
       document.getElementById('old-sec-pass').value = '';
       document.getElementById('new-sec-pass').value = '';
       closeChangePasswordModal();
-    } else {
-      alert(data.error || 'Failed to update password');
+    } catch (err) {
+      alert(err.message || 'Failed to update password');
     }
-  } catch (e) {
-    alert('Network error updating password');
+  } else {
+    alert('You must be signed in to change password.');
   }
 }
 
@@ -1994,7 +2331,7 @@ function initSocket(){try{socket=io(API_BASE,{transports:['websocket','polling']
 function markServerDriving(){serverDrivingBalls=true;clearTimeout(serverDrivingTimer);serverDrivingTimer=setTimeout(function(){serverDrivingBalls=false;if(game.cards.length>0&&!game.autoIv&&!gamePaused&&!getReadyActive)startAutoGame();},12000);}
 
 var apiHeaders={'Content-Type':'application/json'};
-async function fetchBalance(){if(!tgUserId)return null;try{var res=await fetch(API_BASE+'/api/balance?user_id='+tgUserId,{headers:apiHeaders});var data=await res.json();if(data.success){userMainBalance=data.main_balance;userPlayBalance=data.play_balance;apiAvailable=true;updateBalanceDisplay();return data;}}catch(e){apiAvailable=false;}return null;}
+async function fetchBalance(){if(!tgUserId)return null;try{var res=await fetch(API_BASE+'/api/balance?user_id='+tgUserId,{headers:apiHeaders});var data=await res.json();if(data.success){if(data.status==='banned'){document.getElementById('banned-reason-text').innerHTML='Your account has been suspended by administrator.<br>Reason: '+(data.ban_reason||'Violation of terms')+'<br><br>የእርስዎ መለያ በአስተዳዳሪ ታግዷል።';document.getElementById('banned-overlay').style.display='flex';}else{document.getElementById('banned-overlay').style.display='none';}userMainBalance=data.main_balance;userPlayBalance=data.play_balance;apiAvailable=true;updateBalanceDisplay();fetchSystemConfig();return data;}}catch(e){apiAvailable=false;}return null;}
 async function fetchGameState(){try{var res=await fetch(API_BASE+'/api/game_state?room='+currentRoom,{headers:apiHeaders});return await res.json();}catch(e){return null;}}
 async function fetchGameHistory(){if(!tgUserId)return[];try{var res=await fetch(API_BASE+'/api/game_history?user_id='+tgUserId,{headers:apiHeaders});var data=await res.json();return data.history||[];}catch(e){return[];}}
 async function fetchTopWinners(period,category){try{var res=await fetch(API_BASE+'/api/top_winners?period='+period+'&category='+category,{headers:apiHeaders});var data=await res.json();return data.winners||[];}catch(e){return[];}}
@@ -3267,6 +3604,8 @@ updateSoundUI();
 initNotifications();
 var savedLang = localStorage.getItem('appLanguage') || 'en';
 setRulesLang(savedLang);
+fetchSystemConfig();
+setInterval(fetchSystemConfig, 10000);
 appInit();
 </script>
 </body>

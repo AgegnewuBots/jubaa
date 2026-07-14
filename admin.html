@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JUBA BINGO - Admin Dashboard</title>
+  <link rel="stylesheet" href="admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="screen active">
+    <div class="login-card">
+      <div class="logo">
+        <i class="fa-solid fa-crown"></i> JUBA BINGO
+      </div>
+      <p class="subtitle">Secure Administrator Console</p>
+      
+      <div id="login-error" class="alert-box error" style="display:none;"></div>
+      
+      <div class="form-group">
+        <label>Admin Password</label>
+        <div class="input-wrap">
+          <input type="password" id="admin-pass-input" placeholder="••••••••">
+          <button class="eye-toggle" onclick="togglePassField()"><i class="fa-solid fa-eye" id="eye-icon"></i></button>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary btn-full" onclick="attemptLogin()">
+        <i class="fa-solid fa-sign-in-alt"></i> Access Console
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard Container -->
+  <div id="dashboard-screen" class="screen">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fa-solid fa-crown"></i> JUBA ADMIN
+      </div>
+      <nav class="sidebar-menu">
+        <button class="menu-item active" onclick="switchTab('overview')">
+          <i class="fa-solid fa-chart-line"></i> Overview
+        </button>
+        <button class="menu-item" onclick="switchTab('users')">
+          <i class="fa-solid fa-users"></i> Users Management
+        </button>
+        <button class="menu-item" onclick="switchTab('deposits')">
+          <i class="fa-solid fa-circle-arrow-down"></i> Deposits
+          <span class="badge" id="badge-deposits" style="display:none;">0</span>
+        </button>
+        <button class="menu-item" onclick="switchTab('withdrawals')">
+          <i class="fa-solid fa-circle-arrow-up"></i> Withdrawals
+          <span class="badge" id="badge-withdrawals" style="display:none;">0</span>
+        </button>
+        <button class="menu-item" onclick="switchTab('transactions')">
+          <i class="fa-solid fa-receipt"></i> Transactions
+        </button>
+        <button class="menu-item" onclick="switchTab('games')">
+          <i class="fa-solid fa-gamepad"></i> Game History
+        </button>
+        <button class="menu-item" onclick="switchTab('settings')">
+          <i class="fa-solid fa-gears"></i> System Settings
+        </button>
+        <button class="menu-item" onclick="switchTab('broadcast')">
+          <i class="fa-solid fa-bullhorn"></i> Broadcast
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-danger btn-full" onclick="logoutAdmin()">
+          <i class="fa-solid fa-right-from-bracket"></i> Log Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="content-header">
+        <div class="header-title">
+          <h1 id="tab-heading">Dashboard Overview</h1>
+          <p id="tab-subheading">Real-time platform diagnostics and operations</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="refreshCurrentData()">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+          <div class="status-indicator">
+            <span class="pulse-dot"></span> Server: ONLINE
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB: Overview -->
+      <section id="tab-overview" class="tab-pane active">
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div class="kpi-info">
+              <h3>Total Users</h3>
+              <p id="stat-total-users">—</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon green"><i class="fa-solid fa-wallet"></i></div>
+            <div class="kpi-info">
+              <h3>Withdrawable Assets</h3>
+              <p id="stat-main-balance">— Br</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon purple"><i class="fa-solid fa-ticket"></i></div>
+            <div class="kpi-info">
+              <h3>Playable Bonus</h3>
+              <p id="stat-play-balance">— Br</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon gold"><i class="fa-solid fa-circle-play"></i></div>
+            <div class="kpi-info">
+              <h3>Active Bingo Round</h3>
+              <p id="stat-active-game">Inactive</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="overview-grid" style="margin-top: 24px;">
+          <!-- Left side: Quick actions / Live state -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Quick System Management</h2>
+            </div>
+            <div class="card-body">
+              <div class="quick-links">
+                <button class="btn btn-primary" onclick="switchTab('deposits')">
+                  <i class="fa-solid fa-circle-arrow-down"></i> Manage Pending Deposits
+                </button>
+                <button class="btn btn-secondary" onclick="switchTab('withdrawals')">
+                  <i class="fa-solid fa-circle-arrow-up"></i> Manage Pending Withdrawals
+                </button>
+                <button class="btn btn-secondary" onclick="switchTab('settings')">
+                  <i class="fa-solid fa-gears"></i> Configure Platform Settings
+                </button>
+              </div>
+              <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.08); padding-top:20px;">
+                <h4>Database Mode</h4>
+                <p style="color:var(--muted); font-size:12px; margin-bottom:12px;">Active cloud database provider:</p>
+                <div class="db-badge">
+                  <i class="fa-solid fa-fire" style="color:var(--orange);"></i> FIREBASE FIRESTORE (PRODUCTION)
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right side: Recent Logins / Activity -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Recent Transaction Stream</h2>
+            </div>
+            <div class="card-body">
+              <div class="table-container mini-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overview-tx-rows">
+                    <tr><td colspan="4" class="text-center">Loading transactions...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Users -->
+      <section id="tab-users" class="tab-pane">
+        <div class="card">
+          <div class="card-header user-search-header">
+            <h2>User Database</h2>
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="user-search-input" onkeyup="filterUsersTable()" placeholder="Search by ID, Phone, or Name...">
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User ID / Phone</th>
+                    <th>Full Name</th>
+                    <th>Main (Withdrawable)</th>
+                    <th>Play (Bonus)</th>
+                    <th>Games Played</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-rows">
+                  <tr><td colspan="7" class="text-center">Loading user records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Deposits -->
+      <section id="tab-deposits" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h2>Pending Wallet Deposits (manual approvals)</h2>
+            <p style="color:var(--muted); font-size:12px;">Confirm deposit payment details on Chapa/Telebirr before clicking Approve.</p>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tx ID</th>
+                    <th>User Phone</th>
+                    <th>Amount</th>
+                    <th>Date Requested</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="deposits-table-rows">
+                  <tr><td colspan="6" class="text-center">Loading deposit requests...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Withdrawals -->
+      <section id="tab-withdrawals" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h2>Pending Withdrawals</h2>
+            <p style="color:var(--muted); font-size:12px;">Verify that the user has deposited at least 50 ETB prior to transfer processing.</p>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tx ID</th>
+                    <th>User Phone</th>
+                    <th>Amount Requested</th>
+                    <th>Date Requested</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="withdrawals-table-rows">
+                  <tr><td colspan="6" class="text-center">Loading withdrawal requests...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Transactions -->
+      <section id="tab-transactions" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h2>Transaction Stream Ledger</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tx ID</th>
+                    <th>User ID</th>
+                    <th>Transaction Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-table-rows">
+                  <tr><td colspan="6" class="text-center">Loading transaction stream...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Games -->
+      <section id="tab-games" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h2>Game Play Logs</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Play ID</th>
+                    <th>User ID</th>
+                    <th>Game ID</th>
+                    <th>Cards Entry Value</th>
+                    <th>Status</th>
+                    <th>Game Outcome</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="games-table-rows">
+                  <tr><td colspan="7" class="text-center">Loading game history logs...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Settings -->
+      <section id="tab-settings" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h2>System Constraints & Presets</h2>
+          </div>
+          <div class="card-body">
+            <div id="settings-alert" class="alert-box success" style="display:none;">Settings saved successfully!</div>
+            
+            <div class="settings-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Minimum Withdrawal Amount (ETB)</label>
+                  <input type="number" id="setting-min-withdraw" value="150">
+                </div>
+                <div class="form-group">
+                  <label>Minimum Deposit Amount (ETB)</label>
+                  <input type="number" id="setting-min-deposit" value="50">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Invite Commission Reward (ETB)</label>
+                  <input type="number" id="setting-invite-commission" value="10">
+                </div>
+                <div class="form-group">
+                  <label>Maintenance Mode State</label>
+                  <div class="toggle-wrap">
+                    <input type="checkbox" id="setting-maintenance" class="toggle-checkbox">
+                    <span class="toggle-desc">Lock game lobbies and transactions</span>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top: 24px;">
+                <button class="btn btn-primary" onclick="saveSystemSettings()">
+                  <i class="fa-solid fa-save"></i> Save Configuration
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Broadcast -->
+      <section id="tab-broadcast" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h2>Broadcast System Announcement</h2>
+            <p style="color:var(--muted); font-size:12px;">Push a notice or dynamic notification popup directly to all logged-in players.</p>
+          </div>
+          <div class="card-body">
+            <div id="broadcast-alert" class="alert-box success" style="display:none;">Broadcast updated successfully!</div>
+            
+            <div class="settings-form">
+              <div class="form-group">
+                <label>Active Status</label>
+                <div class="toggle-wrap">
+                  <input type="checkbox" id="broadcast-active" class="toggle-checkbox">
+                  <span class="toggle-desc">Enable this announcement in user interface</span>
+                </div>
+              </div>
+              
+              <div class="form-group" style="margin-top: 16px;">
+                <label>Notification Popup Type</label>
+                <select id="broadcast-type">
+                  <option value="text">Standard Text Bar Notice (Top Header)</option>
+                  <option value="modal">Intrusive Modal Alert (For critical news)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-top: 16px;">
+                <label>Broadcast Announcement Content</label>
+                <textarea id="broadcast-message" rows="5" placeholder="E.g., Special bonus weekend is active! Deposit 100 ETB and get 20% cashback."></textarea>
+              </div>
+
+              <div style="margin-top: 24px;">
+                <button class="btn btn-primary" onclick="saveBroadcastSettings()">
+                  <i class="fa-solid fa-bullhorn"></i> Send Broadcast Announcement
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Edit User Balances -->
+  <div id="edit-user-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit Player Wallet & Account</h3>
+        <button class="modal-close" onclick="closeEditUserModal()"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Player Account (ID/Phone)</label>
+          <input type="text" id="edit-user-id" readonly class="input-readonly">
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="edit-user-name">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Withdrawable Balance (Main ETB)</label>
+            <input type="number" id="edit-user-main" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Play Balance (Bonus ETB)</label>
+            <input type="number" id="edit-user-play" step="0.01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Reset Password (leave empty to keep current)</label>
+          <input type="password" id="edit-user-password" placeholder="New login password">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeEditUserModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitEditUser()">
+          <i class="fa-solid fa-save"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

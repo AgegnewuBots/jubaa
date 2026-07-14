@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 require('dotenv').config();
 
 const db = require('./database');
@@ -13,7 +14,7 @@ app.use(express.json());
 // Serve index.html statically from root
 app.use(express.static(__dirname));
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 // Deterministic card generator (must match client exactly)
 function generateCardDeterministic(cardId) {
@@ -87,6 +88,266 @@ function generateGameId() {
 }
 
 // REST Endpoints
+app.get(['/admin', '/addmin'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// Admin Authentication Middleware
+function requireAdmin(req, res, next) {
+  const pwd = req.headers['x-admin-password'];
+  if (pwd === '@JUBA1009') {
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized admin access (ያልተፈቀደ አድሚን መግቢያ)' });
+  }
+}
+
+// Client configuration endpoint (for maintenance mode, broadcast notifications, etc.)
+app.get('/api/config', async (req, res) => {
+  try {
+    const settings = await db.getSystemSettings();
+    const broadcast = await db.getBroadcast();
+    res.json({
+      success: true,
+      settings,
+      broadcast
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Client deposit submission request
+app.post('/api/deposit/request', async (req, res) => {
+  const { user_id, amount } = req.body;
+  if (!user_id || !amount) return res.status(400).json({ error: 'Missing parameters' });
+  if (parseFloat(amount) <= 0) return res.status(400).json({ error: 'Invalid amount' });
+  
+  const result = await db.createDepositRequest(user_id, amount);
+  if (result.success) {
+    res.json({ success: true, tx_id: result.tx_id });
+  } else {
+    res.status(400).json({ error: result.error });
+  }
+});
+
+// Client withdrawal submission request
+app.post('/api/withdraw/request', async (req, res) => {
+  const { user_id, amount } = req.body;
+  if (!user_id || !amount) return res.status(400).json({ error: 'Missing parameters' });
+  if (parseFloat(amount) <= 0) return res.status(400).json({ error: 'Invalid amount' });
+
+  const result = await db.createWithdrawRequest(user_id, amount);
+  if (result.success) {
+    res.json({ success: true, tx_id: result.tx_id });
+  } else {
+    res.status(400).json({ error: result.error });
+  }
+});
+
+// Admin Panel endpoints
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  if (password === '@JUBA1009') {
+    res.json({ success: true, token: '@JUBA1009' });
+  } else {
+    res.status(401).json({ error: 'Invalid password (የተሳሳተ የይለፍ ቃል)' });
+  }
+});
+
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+  try {
+    const users = await db.getAllUsers();
+    let totalMain = 0;
+    let totalPlay = 0;
+    users.forEach(u => {
+      totalMain += parseFloat(u.main_balance || 0);
+      totalPlay += parseFloat(u.play_balance || 0);
+    });
+
+    res.json({
+      success: true,
+      total_users: users.length,
+      total_main_balance: totalMain,
+      total_play_balance: totalPlay,
+      active_game: globalGame.status === 'running' ? {
+        game_id: globalGame.gameId,
+        status: globalGame.status,
+        players: Object.keys(globalGame.players).length
+      } : null
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve stats' });
+  }
+});
+
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const users = await db.getAllUsers();
+    res.json({ success: true, users });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve users' });
+  }
+});
+
+app.post('/api/admin/users/update', requireAdmin, async (req, res) => {
+  const { userId, first_name, main_balance, play_balance, password } = req.body;
+  if (!userId) return res.status(400).json({ error: 'User ID is required' });
+  
+  const success = await db.updateUserByAdmin(userId, { first_name, main_balance, play_balance, password });
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to update user' });
+  }
+});
+
+app.post('/api/admin/users/ban', requireAdmin, async (req, res) => {
+  const { userId, reason } = req.body;
+  if (!userId) return res.status(400).json({ error: 'User ID is required' });
+  
+  const success = await db.banUser(userId, reason);
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to ban user' });
+  }
+});
+
+app.post('/api/admin/users/unban', requireAdmin, async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: 'User ID is required' });
+  
+  const success = await db.unbanUser(userId);
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to unban user' });
+  }
+});
+
+app.get('/api/admin/deposits', requireAdmin, async (req, res) => {
+  try {
+    const deposits = await db.getPendingDeposits();
+    res.json({ success: true, deposits });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve pending deposits' });
+  }
+});
+
+app.get('/api/admin/withdrawals', requireAdmin, async (req, res) => {
+  try {
+    const withdrawals = await db.getPendingWithdrawals();
+    res.json({ success: true, withdrawals });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve pending withdrawals' });
+  }
+});
+
+app.get('/api/admin/transactions', requireAdmin, async (req, res) => {
+  try {
+    const transactions = await db.getAllTransactions();
+    res.json({ success: true, transactions });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve transactions' });
+  }
+});
+
+app.get('/api/admin/games', requireAdmin, async (req, res) => {
+  try {
+    const games = await db.getAllGames();
+    res.json({ success: true, games });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve games' });
+  }
+});
+
+app.post('/api/admin/deposits/approve', requireAdmin, async (req, res) => {
+  const { txId } = req.body;
+  if (!txId) return res.status(400).json({ error: 'Transaction ID is required' });
+  
+  const success = await db.approveDeposit(txId);
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to approve deposit' });
+  }
+});
+
+app.post('/api/admin/deposits/reject', requireAdmin, async (req, res) => {
+  const { txId } = req.body;
+  if (!txId) return res.status(400).json({ error: 'Transaction ID is required' });
+  
+  const success = await db.rejectDeposit(txId);
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to reject deposit' });
+  }
+});
+
+app.post('/api/admin/withdrawals/approve', requireAdmin, async (req, res) => {
+  const { txId } = req.body;
+  if (!txId) return res.status(400).json({ error: 'Transaction ID is required' });
+  
+  const success = await db.approveWithdrawal(txId);
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to approve withdrawal' });
+  }
+});
+
+app.post('/api/admin/withdrawals/reject', requireAdmin, async (req, res) => {
+  const { txId, refund, reason } = req.body;
+  if (!txId) return res.status(400).json({ error: 'Transaction ID is required' });
+  
+  const success = await db.rejectWithdrawal(txId, refund !== false, reason);
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to reject withdrawal' });
+  }
+});
+
+app.get('/api/admin/settings', requireAdmin, async (req, res) => {
+  try {
+    const settings = await db.getSystemSettings();
+    res.json({ success: true, settings });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve settings' });
+  }
+});
+
+app.post('/api/admin/settings', requireAdmin, async (req, res) => {
+  const { min_withdraw, min_deposit, invite_commission, maintenance } = req.body;
+  const success = await db.updateSystemSettings({ min_withdraw, min_deposit, invite_commission, maintenance });
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to update settings' });
+  }
+});
+
+app.get('/api/admin/broadcast', requireAdmin, async (req, res) => {
+  try {
+    const broadcast = await db.getBroadcast();
+    res.json({ success: true, broadcast });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve broadcast settings' });
+  }
+});
+
+app.post('/api/admin/broadcast', requireAdmin, async (req, res) => {
+  const { active, type, message } = req.body;
+  const success = await db.updateBroadcast({ active, type, message });
+  if (success) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Failed to update broadcast settings' });
+  }
+});
+
 app.get('/api/balance', async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ error: 'User ID is required' });
@@ -96,7 +357,9 @@ app.get('/api/balance', async (req, res) => {
     success: true,
     main_balance: user.mainBalance,
     play_balance: user.playBalance,
-    has_password: has_password
+    has_password: has_password,
+    status: user.status || 'active',
+    ban_reason: user.banReason || ''
   });
 });
 

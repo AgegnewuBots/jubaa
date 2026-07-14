@@ -1,77 +1,195 @@
 const { initializeApp } = require('firebase/app');
-const { getAuth } = require('firebase/auth');
 const { 
   getFirestore, 
   doc, 
+  collection, 
   getDoc, 
+  getDocs, 
   setDoc, 
   updateDoc, 
-  collection, 
+  deleteDoc, 
   query, 
   where, 
-  getDocs, 
-  writeBatch, 
-  runTransaction 
+  orderBy, 
+  limit, 
+  runTransaction,
+  writeBatch
 } = require('firebase/firestore');
 const firebaseConfig = require('./firebase-applet-config.json');
 
-// Initialize Firebase Web SDK
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-const auth = getAuth(app);
+const firestore = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
-const OperationType = {
-  CREATE: 'create',
-  UPDATE: 'update',
-  DELETE: 'delete',
-  LIST: 'list',
-  GET: 'get',
-  WRITE: 'write',
-};
+class DocRefWrapper {
+  constructor(path, firestoreDocRef) {
+    this.path = path;
+    this.ref = firestoreDocRef;
+  }
 
-function handleFirestoreError(error, operationType, path) {
-  const errMessage = error instanceof Error ? error.message : String(error);
-  const errInfo = {
-    error: errMessage,
-    authInfo: {
-      userId: null,
-      email: null,
-      emailVerified: null,
-      isAnonymous: null,
-      tenantId: null,
-      providerInfo: []
-    },
-    operationType,
-    path
-  };
+  get id() {
+    return this.ref.id;
+  }
 
-  try {
-    if (auth && auth.currentUser) {
-      errInfo.authInfo = {
-        userId: auth.currentUser.uid,
-        email: auth.currentUser.email,
-        emailVerified: auth.currentUser.emailVerified,
-        isAnonymous: auth.currentUser.isAnonymous,
-        tenantId: auth.currentUser.tenantId,
-        providerInfo: auth.currentUser.providerData?.map(provider => ({
-          providerId: provider.providerId,
-          email: provider.email,
-        })) || []
-      };
+  async get() {
+    const snap = await getDoc(this.ref);
+    return {
+      exists: snap.exists(),
+      data: () => snap.data(),
+      id: snap.id
+    };
+  }
+
+  async set(data, options) {
+    await setDoc(this.ref, data, options);
+  }
+
+  async update(data) {
+    await updateDoc(this.ref, data);
+  }
+
+  async delete() {
+    await deleteDoc(this.ref);
+  }
+}
+
+class DocumentSnapshotWrapper {
+  constructor(docSnap, collectionPath) {
+    this.snap = docSnap;
+    this.collectionPath = collectionPath;
+  }
+
+  get id() { return this.snap.id; }
+  get exists() { return this.snap.exists(); }
+  data() { return this.snap.data(); }
+  get ref() {
+    return new DocRefWrapper(`${this.collectionPath}/${this.snap.id}`, this.snap.ref);
+  }
+}
+
+class QuerySnapshotWrapper {
+  constructor(firestoreQuerySnapshot, collectionPath) {
+    this.snap = firestoreQuerySnapshot;
+    this.collectionPath = collectionPath;
+  }
+
+  get size() { return this.snap.size; }
+  get empty() { return this.snap.empty; }
+  get docs() {
+    return this.snap.docs.map(docSnap => new DocumentSnapshotWrapper(docSnap, this.collectionPath));
+  }
+
+  forEach(callback) {
+    this.docs.forEach(doc => callback(doc));
+  }
+}
+
+class QueryWrapper {
+  constructor(firestoreQuery, collectionPath) {
+    this.firestoreQuery = firestoreQuery;
+    this.collectionPath = collectionPath;
+  }
+
+  where(field, op, val) {
+    return new QueryWrapper(query(this.firestoreQuery, where(field, op, val)), this.collectionPath);
+  }
+
+  orderBy(field, direction) {
+    return new QueryWrapper(query(this.firestoreQuery, orderBy(field, direction)), this.collectionPath);
+  }
+
+  limit(n) {
+    return new QueryWrapper(query(this.firestoreQuery, limit(n)), this.collectionPath);
+  }
+
+  async get() {
+    const snap = await getDocs(this.firestoreQuery);
+    return new QuerySnapshotWrapper(snap, this.collectionPath);
+  }
+
+  doc(docId) {
+    if (docId) {
+      const docRef = doc(firestore, this.collectionPath, docId);
+      return new DocRefWrapper(`${this.collectionPath}/${docId}`, docRef);
+    } else {
+      const colRef = collection(firestore, this.collectionPath);
+      const docRef = doc(colRef);
+      return new DocRefWrapper(`${this.collectionPath}/${docRef.id}`, docRef);
     }
-  } catch (e) {
-    // Ignore error getting auth info
-  }
-
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
-
-function checkAndHandleError(error, operationType, path) {
-  if (error && (error.code === 'permission-denied' || (error.message && error.message.toLowerCase().includes('permission')))) {
-    handleFirestoreError(error, operationType, path);
   }
 }
+
+class TransactionWrapper {
+  constructor(t) {
+    this.t = t;
+  }
+
+  async get(docRefWrapper) {
+    const snap = await this.t.get(docRefWrapper.ref);
+    return {
+      exists: snap.exists(),
+      data: () => snap.data(),
+      id: snap.id
+    };
+  }
+
+  set(docRefWrapper, data, options) {
+    this.t.set(docRefWrapper.ref, data, options);
+    return this;
+  }
+
+  update(docRefWrapper, data) {
+    this.t.update(docRefWrapper.ref, data);
+    return this;
+  }
+
+  delete(docRefWrapper) {
+    this.t.delete(docRefWrapper.ref);
+    return this;
+  }
+}
+
+class BatchWrapper {
+  constructor() {
+    this.batch = writeBatch(firestore);
+  }
+
+  set(docRefWrapper, data, options) {
+    this.batch.set(docRefWrapper.ref, data, options);
+    return this;
+  }
+
+  update(docRefWrapper, data) {
+    this.batch.update(docRefWrapper.ref, data);
+    return this;
+  }
+
+  delete(docRefWrapper) {
+    this.batch.delete(docRefWrapper.ref);
+    return this;
+  }
+
+  async commit() {
+    await this.batch.commit();
+  }
+}
+
+const db = {
+  collection(collectionPath) {
+    const colRef = collection(firestore, collectionPath);
+    return new QueryWrapper(colRef, collectionPath);
+  },
+
+  batch() {
+    return new BatchWrapper();
+  },
+
+  async runTransaction(updateFunction) {
+    return await runTransaction(firestore, async (t) => {
+      const wrappedTransaction = new TransactionWrapper(t);
+      return await updateFunction(wrappedTransaction);
+    });
+  }
+};
 
 // Normalizes user fields to support camelCase and snake_case properties seamlessly
 function normalizeUser(dbUser) {
@@ -90,7 +208,9 @@ function normalizeUser(dbUser) {
     currentStreak: dbUser.current_streak || 0,
     highestStreak: dbUser.highest_streak || 0,
     mainBalanceValue: typeof dbUser.main_balance === 'number' ? dbUser.main_balance : parseFloat(dbUser.main_balance || 0),
-    playBalanceValue: typeof dbUser.play_balance === 'number' ? dbUser.play_balance : parseFloat(dbUser.play_balance || 0)
+    playBalanceValue: typeof dbUser.play_balance === 'number' ? dbUser.play_balance : parseFloat(dbUser.play_balance || 0),
+    status: dbUser.status || 'active',
+    banReason: dbUser.ban_reason || ''
   };
 }
 
@@ -115,7 +235,8 @@ function getMemoryUser(userId) {
       invited: Math.floor(Math.random() * 5),
       is_vip: false,
       current_streak: 0,
-      highest_streak: 0
+      highest_streak: 0,
+      status: 'active'
     };
   }
   return memoryDb.users[userId];
@@ -123,12 +244,12 @@ function getMemoryUser(userId) {
 
 module.exports = {
   db,
-  auth,
+  
   async getUser(userId) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(userDocRef);
-      if (!docSnap.exists()) {
+      const docRef = db.collection('users').doc(userId);
+      const docSnap = await docRef.get();
+      if (!docSnap.exists) {
         // User not found, create one
         const newUser = {
           user_id: userId,
@@ -140,24 +261,25 @@ module.exports = {
           invited: Math.floor(Math.random() * 5),
           is_vip: false,
           current_streak: 0,
-          highest_streak: 0
+          highest_streak: 0,
+          status: 'active',
+          ban_reason: ''
         };
-        await setDoc(userDocRef, newUser);
+        await docRef.set(newUser);
         return normalizeUser(newUser);
       }
       return normalizeUser(docSnap.data());
     } catch (err) {
-      console.error('Firebase getUser error:', err);
-      checkAndHandleError(err, OperationType.GET, 'users/' + userId);
+      console.error('Admin SDK getUser error:', err);
       return normalizeUser(getMemoryUser(userId));
     }
   },
 
   async registerWebUser(userId, password, name) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(userDocRef);
-      if (docSnap.exists()) {
+      const docRef = db.collection('users').doc(userId);
+      const docSnap = await docRef.get();
+      if (docSnap.exists) {
         return null;
       }
       const newUser = {
@@ -172,34 +294,34 @@ module.exports = {
         invited: Math.floor(Math.random() * 5),
         is_vip: false,
         current_streak: 0,
-        highest_streak: 0
+        highest_streak: 0,
+        status: 'active',
+        ban_reason: ''
       };
-      await setDoc(userDocRef, newUser);
+      await docRef.set(newUser);
       return normalizeUser(newUser);
     } catch (err) {
-      console.error('Firebase registerWebUser error:', err);
-      checkAndHandleError(err, OperationType.WRITE, 'users/' + userId);
+      console.error('Admin SDK registerWebUser error:', err);
       return null;
     }
   },
 
   async setUserPassword(userId, password) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      await setDoc(userDocRef, {
+      const docRef = db.collection('users').doc(userId);
+      await docRef.set({
         username: '__pwd__:' + password
       }, { merge: true });
     } catch (err) {
-      console.error('Firebase setUserPassword error:', err);
-      checkAndHandleError(err, OperationType.WRITE, 'users/' + userId);
+      console.error('Admin SDK setUserPassword error:', err);
     }
   },
 
   async loginWebUser(userId, password) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(userDocRef);
-      if (docSnap.exists()) {
+      const docRef = db.collection('users').doc(userId);
+      const docSnap = await docRef.get();
+      if (docSnap.exists) {
         const user = docSnap.data();
         if (user.username === '__pwd__:' + password) {
           return normalizeUser(user);
@@ -207,31 +329,29 @@ module.exports = {
       }
       return null;
     } catch (err) {
-      console.error('Firebase loginWebUser error:', err);
-      checkAndHandleError(err, OperationType.GET, 'users/' + userId);
+      console.error('Admin SDK loginWebUser error:', err);
       return null;
     }
   },
 
   async updateUserName(userId, firstName, username) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      await setDoc(userDocRef, {
+      const docRef = db.collection('users').doc(userId);
+      await docRef.set({
         first_name: firstName,
         username: username
       }, { merge: true });
     } catch (err) {
-      console.error('Firebase updateUserName error:', err);
-      checkAndHandleError(err, OperationType.WRITE, 'users/' + userId);
+      console.error('Admin SDK updateUserName error:', err);
     }
   },
 
   async deductBet(userId, amount) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const result = await runTransaction(db, async (transaction) => {
-        const docSnap = await transaction.get(userDocRef);
-        if (!docSnap.exists()) return null;
+      const docRef = db.collection('users').doc(userId);
+      const result = await db.runTransaction(async (transaction) => {
+        const docSnap = await transaction.get(docRef);
+        if (!docSnap.exists) return null;
         
         const user = docSnap.data();
         let play = parseFloat(user.play_balance || 0);
@@ -246,7 +366,7 @@ module.exports = {
           play = 0;
         }
         
-        transaction.update(userDocRef, {
+        transaction.update(docRef, {
           play_balance: play,
           main_balance: main
         });
@@ -256,9 +376,8 @@ module.exports = {
       
       if (!result) return null;
       
-      const transactionsCollection = collection(db, 'transactions');
-      const txDocRef = doc(transactionsCollection);
-      await setDoc(txDocRef, {
+      const txDocRef = db.collection('transactions').doc();
+      await txDocRef.set({
         user_id: userId,
         type: 'bet',
         amount: amount,
@@ -272,25 +391,24 @@ module.exports = {
         main_balance: result.main
       });
     } catch (err) {
-      console.error('Firebase deductBet error:', err);
-      checkAndHandleError(err, OperationType.WRITE, 'users/' + userId);
+      console.error('Admin SDK deductBet error:', err);
       return null;
     }
   },
 
   async addWin(userId, amount, gameId) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const result = await runTransaction(db, async (transaction) => {
-        const docSnap = await transaction.get(userDocRef);
-        if (!docSnap.exists()) return null;
+      const docRef = db.collection('users').doc(userId);
+      const result = await db.runTransaction(async (transaction) => {
+        const docSnap = await transaction.get(docRef);
+        if (!docSnap.exists) return null;
         
         const user = docSnap.data();
         const newMain = parseFloat(user.main_balance || 0) + amount;
         const newGamesWon = parseInt(user.games_won || 0) + 1;
         const newTotalWon = parseFloat(user.total_won || 0) + amount;
         
-        transaction.update(userDocRef, {
+        transaction.update(docRef, {
           main_balance: newMain,
           games_won: newGamesWon,
           total_won: newTotalWon
@@ -301,9 +419,8 @@ module.exports = {
       
       if (!result) return null;
       
-      const transactionsCollection = collection(db, 'transactions');
-      const txDocRef = doc(transactionsCollection);
-      await setDoc(txDocRef, {
+      const txDocRef = db.collection('transactions').doc();
+      await txDocRef.set({
         user_id: userId,
         type: 'bingo_win',
         amount: amount,
@@ -311,14 +428,12 @@ module.exports = {
         time: new Date().toISOString()
       });
       
-      const q = query(
-        collection(db, 'game_history'),
-        where('user_id', '==', userId),
-        where('game_id', '==', gameId)
-      );
-      const querySnap = await getDocs(q);
+      const querySnap = await db.collection('game_history')
+        .where('user_id', '==', userId)
+        .where('game_id', '==', gameId)
+        .get();
         
-      const batch = writeBatch(db);
+      const batch = db.batch();
       querySnap.forEach(snap => {
         batch.update(snap.ref, { result: '+' + amount + ' Br' });
       });
@@ -326,26 +441,24 @@ module.exports = {
       
       return normalizeUser(result);
     } catch (err) {
-      console.error('Firebase addWin error:', err);
-      checkAndHandleError(err, OperationType.WRITE, 'users/' + userId);
+      console.error('Admin SDK addWin error:', err);
       return null;
     }
   },
 
   async recordGamePlayed(userId, gameId, cardsCount, stake) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(userDocRef);
-      if (docSnap.exists()) {
+      const docRef = db.collection('users').doc(userId);
+      const docSnap = await docRef.get();
+      if (docSnap.exists) {
         const user = docSnap.data();
-        await updateDoc(userDocRef, {
+        await docRef.update({
           games_played: parseInt(user.games_played || 0) + 1
         });
       }
       
-      const historyCollection = collection(db, 'game_history');
-      const histDocRef = doc(historyCollection);
-      await setDoc(histDocRef, {
+      const histDocRef = db.collection('game_history').doc();
+      await histDocRef.set({
         user_id: userId,
         game_id: gameId,
         entry: cardsCount * stake,
@@ -354,18 +467,15 @@ module.exports = {
         time: new Date().toISOString()
       });
     } catch (err) {
-      console.error('Firebase recordGamePlayed error:', err);
-      checkAndHandleError(err, OperationType.WRITE, 'game_history');
+      console.error('Admin SDK recordGamePlayed error:', err);
     }
   },
 
   async getGameHistory(userId) {
     try {
-      const q = query(
-        collection(db, 'game_history'),
-        where('user_id', '==', userId)
-      );
-      const querySnap = await getDocs(q);
+      const querySnap = await db.collection('game_history')
+        .where('user_id', '==', userId)
+        .get();
         
       const history = [];
       querySnap.forEach(snap => {
@@ -382,19 +492,16 @@ module.exports = {
         time: d.time
       }));
     } catch (err) {
-      console.error('Firebase getGameHistory error:', err);
-      checkAndHandleError(err, OperationType.LIST, 'game_history');
+      console.error('Admin SDK getGameHistory error:', err);
       return [];
     }
   },
 
   async getTransactions(userId) {
     try {
-      const q = query(
-        collection(db, 'transactions'),
-        where('user_id', '==', userId)
-      );
-      const querySnap = await getDocs(q);
+      const querySnap = await db.collection('transactions')
+        .where('user_id', '==', userId)
+        .get();
         
       const transactions = [];
       querySnap.forEach(snap => {
@@ -406,21 +513,20 @@ module.exports = {
       return transactions.slice(0, 20).map(d => ({
         type: d.type,
         amount: d.amount,
-        status: d.status,
+        status: d.status || 'Done',
         time: d.time
       }));
     } catch (err) {
-      console.error('Firebase getTransactions error:', err);
-      checkAndHandleError(err, OperationType.LIST, 'transactions');
+      console.error('Admin SDK getTransactions error:', err);
       return [];
     }
   },
 
   async getProfileStats(userId) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(userDocRef);
-      if (!docSnap.exists()) return null;
+      const docRef = db.collection('users').doc(userId);
+      const docSnap = await docRef.get();
+      if (!docSnap.exists) return null;
       const user = docSnap.data();
       return {
         games_played: user.games_played || 0,
@@ -432,18 +538,17 @@ module.exports = {
         highest_streak: user.highest_streak || 0
       };
     } catch (err) {
-      console.error('Firebase getProfileStats error:', err);
-      checkAndHandleError(err, OperationType.GET, 'users/' + userId);
+      console.error('Admin SDK getProfileStats error:', err);
       return null;
     }
   },
 
   async updateUserStreak(userId, won) {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      await runTransaction(db, async (transaction) => {
-        const docSnap = await transaction.get(userDocRef);
-        if (!docSnap.exists()) return;
+      const docRef = db.collection('users').doc(userId);
+      await db.runTransaction(async (transaction) => {
+        const docSnap = await transaction.get(docRef);
+        if (!docSnap.exists) return;
         const user = docSnap.data();
         let current = parseInt(user.current_streak || 0);
         let highest = parseInt(user.highest_streak || 0);
@@ -455,14 +560,13 @@ module.exports = {
         } else {
           current = 0;
         }
-        transaction.update(userDocRef, {
+        transaction.update(docRef, {
           current_streak: current,
           highest_streak: highest
         });
       });
     } catch (err) {
-      console.error('Firebase updateUserStreak error:', err);
-      checkAndHandleError(err, OperationType.WRITE, 'users/' + userId);
+      console.error('Admin SDK updateUserStreak error:', err);
     }
   },
 
@@ -473,7 +577,7 @@ module.exports = {
       if (category === 'invite') orderBy = 'invited';
       if (category === 'games') orderBy = 'games_played';
       
-      const querySnap = await getDocs(collection(db, 'users'));
+      const querySnap = await db.collection('users').get();
       const users = [];
       querySnap.forEach(snap => {
         users.push(snap.data());
@@ -497,8 +601,7 @@ module.exports = {
         };
       });
     } catch (err) {
-      console.error('Firebase getTopWinners error:', err);
-      checkAndHandleError(err, OperationType.LIST, 'users');
+      console.error('Admin SDK getTopWinners error:', err);
       return [];
     }
   },
@@ -510,7 +613,7 @@ module.exports = {
       if (category === 'invite') orderBy = 'invited';
       if (category === 'games') orderBy = 'games_played';
       
-      const querySnap = await getDocs(collection(db, 'users'));
+      const querySnap = await db.collection('users').get();
       const users = [];
       querySnap.forEach(snap => {
         users.push(snap.data());
@@ -527,9 +630,371 @@ module.exports = {
       }
       return null;
     } catch (err) {
-      console.error('Firebase getMyRank error:', err);
-      checkAndHandleError(err, OperationType.LIST, 'users');
+      console.error('Admin SDK getMyRank error:', err);
       return null;
+    }
+  },
+
+  // ================= ADMIN & SYSTEM SETTINGS OPERATIONS =================
+
+  async getAllUsers() {
+    try {
+      const snap = await db.collection('users').get();
+      const users = [];
+      snap.forEach(doc => {
+        users.push(normalizeUser(doc.data()));
+      });
+      return users;
+    } catch (err) {
+      console.error('Admin SDK getAllUsers error:', err);
+      return [];
+    }
+  },
+
+  async updateUserByAdmin(userId, data) {
+    try {
+      const docRef = db.collection('users').doc(userId);
+      const updatePayload = {};
+      
+      if (data.first_name !== undefined) updatePayload.first_name = data.first_name;
+      if (data.main_balance !== undefined) updatePayload.main_balance = parseFloat(data.main_balance || 0);
+      if (data.play_balance !== undefined) updatePayload.play_balance = parseFloat(data.play_balance || 0);
+      if (data.password !== undefined && data.password !== '') {
+        updatePayload.username = '__pwd__:' + data.password;
+      }
+      
+      await docRef.update(updatePayload);
+      return true;
+    } catch (err) {
+      console.error('Admin SDK updateUserByAdmin error:', err);
+      return false;
+    }
+  },
+
+  async banUser(userId, reason) {
+    try {
+      const docRef = db.collection('users').doc(userId);
+      await docRef.update({
+        status: 'banned',
+        ban_reason: reason || 'Violation of terms'
+      });
+      return true;
+    } catch (err) {
+      console.error('Admin SDK banUser error:', err);
+      return false;
+    }
+  },
+
+  async unbanUser(userId) {
+    try {
+      const docRef = db.collection('users').doc(userId);
+      await docRef.update({
+        status: 'active',
+        ban_reason: ''
+      });
+      return true;
+    } catch (err) {
+      console.error('Admin SDK unbanUser error:', err);
+      return false;
+    }
+  },
+
+  async getPendingDeposits() {
+    return this.getTransactionsByTypeAndStatus('deposit', 'Pending');
+  },
+
+  async getPendingWithdrawals() {
+    return this.getTransactionsByTypeAndStatus('withdraw', 'Pending');
+  },
+
+  async getTransactionsByTypeAndStatus(type, status) {
+    try {
+      const snap = await db.collection('transactions')
+        .where('type', '==', type)
+        .where('status', '==', status)
+        .get();
+      const txs = [];
+      snap.forEach(doc => {
+        txs.push({ tx_id: doc.id, ...doc.data() });
+      });
+      return txs.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+    } catch (err) {
+      console.error(`Admin SDK getTransactionsByTypeAndStatus error (${type}, ${status}):`, err);
+      return [];
+    }
+  },
+
+  async getAllTransactions() {
+    try {
+      const snap = await db.collection('transactions').get();
+      const txs = [];
+      snap.forEach(doc => {
+        txs.push({ tx_id: doc.id, ...doc.data() });
+      });
+      return txs.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0)).slice(0, 100);
+    } catch (err) {
+      console.error('Admin SDK getAllTransactions error:', err);
+      return [];
+    }
+  },
+
+  async getAllGames() {
+    try {
+      const snap = await db.collection('game_history').get();
+      const games = [];
+      snap.forEach(doc => {
+        games.push({ id: doc.id, ...doc.data() });
+      });
+      return games.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0)).slice(0, 100);
+    } catch (err) {
+      console.error('Admin SDK getAllGames error:', err);
+      return [];
+    }
+  },
+
+  async createDepositRequest(userId, amount) {
+    try {
+      const docRef = db.collection('transactions').doc();
+      const tx = {
+        user_id: userId,
+        type: 'deposit',
+        amount: parseFloat(amount),
+        status: 'Pending',
+        time: new Date().toISOString()
+      };
+      await docRef.set(tx);
+      return { success: true, tx_id: docRef.id };
+    } catch (err) {
+      console.error('Admin SDK createDepositRequest error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  async createWithdrawRequest(userId, amount) {
+    try {
+      // 1. Verify user exists and check balance
+      const userRef = db.collection('users').doc(userId);
+      const userSnap = await userRef.get();
+      if (!userSnap.exists) {
+        return { success: false, error: 'User not found' };
+      }
+      const user = userSnap.data();
+      const mainBal = parseFloat(user.main_balance || 0);
+      const reqAmount = parseFloat(amount);
+      
+      if (mainBal < reqAmount) {
+        return { success: false, error: 'Insufficient withdrawable balance (ያልበቃ ዋና ሂሳብ)' };
+      }
+
+      // 2. REQUIRE AT LEAST 50 ETB IN DEPOSIT TO WITHDRAW
+      // Query completed deposits for this user
+      const depositsSnap = await db.collection('transactions')
+        .where('user_id', '==', userId)
+        .where('type', '==', 'deposit')
+        .where('status', '==', 'Done')
+        .get();
+        
+      let totalDeposited = 0;
+      depositsSnap.forEach(snap => {
+        totalDeposited += parseFloat(snap.data().amount || 0);
+      });
+      
+      if (totalDeposited < 50) {
+        return { 
+          success: false, 
+          error: 'To withdraw, you must deposit at least 50 ETB first (ገንዘብ ለማውጣት ቢያንስ 50 ብር ማስገባት አለብዎት።)' 
+        };
+      }
+
+      // 3. Deduct balance and create request
+      await db.runTransaction(async (transaction) => {
+        const freshSnap = await transaction.get(userRef);
+        const freshUser = freshSnap.data();
+        const freshMain = parseFloat(freshUser.main_balance || 0);
+        if (freshMain < reqAmount) {
+          throw new Error('Insufficient balance during transaction');
+        }
+        transaction.update(userRef, {
+          main_balance: freshMain - reqAmount
+        });
+      });
+
+      const txDocRef = db.collection('transactions').doc();
+      const tx = {
+        user_id: userId,
+        type: 'withdraw',
+        amount: reqAmount,
+        status: 'Pending',
+        time: new Date().toISOString()
+      };
+      await txDocRef.set(tx);
+      return { success: true, tx_id: txDocRef.id };
+    } catch (err) {
+      console.error('Admin SDK createWithdrawRequest error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  async approveDeposit(txId) {
+    try {
+      const txRef = db.collection('transactions').doc(txId);
+      const txSnap = await txRef.get();
+      if (!txSnap.exists) return false;
+      const tx = txSnap.data();
+      if (tx.status !== 'Pending') return false;
+
+      const userRef = db.collection('users').doc(tx.user_id);
+      await db.runTransaction(async (transaction) => {
+        const userSnap = await transaction.get(userRef);
+        if (userSnap.exists) {
+          const user = userSnap.data();
+          const currentMain = parseFloat(user.main_balance || 0);
+          transaction.update(userRef, {
+            main_balance: currentMain + parseFloat(tx.amount)
+          });
+        }
+        transaction.update(txRef, { status: 'Done' });
+      });
+      return true;
+    } catch (err) {
+      console.error('Admin SDK approveDeposit error:', err);
+      return false;
+    }
+  },
+
+  async rejectDeposit(txId) {
+    try {
+      const txRef = db.collection('transactions').doc(txId);
+      await txRef.update({ status: 'Rejected' });
+      return true;
+    } catch (err) {
+      console.error('Admin SDK rejectDeposit error:', err);
+      return false;
+    }
+  },
+
+  async approveWithdrawal(txId) {
+    try {
+      const txRef = db.collection('transactions').doc(txId);
+      const txSnap = await txRef.get();
+      if (!txSnap.exists) return false;
+      const tx = txSnap.data();
+      if (tx.status !== 'Pending') return false;
+
+      await txRef.update({ status: 'Done' });
+      return true;
+    } catch (err) {
+      console.error('Admin SDK approveWithdrawal error:', err);
+      return false;
+    }
+  },
+
+  async rejectWithdrawal(txId, refund, reason) {
+    try {
+      const txRef = db.collection('transactions').doc(txId);
+      const txSnap = await txRef.get();
+      if (!txSnap.exists) return false;
+      const tx = txSnap.data();
+      if (tx.status !== 'Pending') return false;
+
+      if (refund) {
+        const userRef = db.collection('users').doc(tx.user_id);
+        await db.runTransaction(async (transaction) => {
+          const userSnap = await transaction.get(userRef);
+          if (userSnap.exists) {
+            const user = userSnap.data();
+            const currentMain = parseFloat(user.main_balance || 0);
+            transaction.update(userRef, {
+              main_balance: currentMain + parseFloat(tx.amount)
+            });
+          }
+          transaction.update(txRef, { 
+            status: 'Rejected',
+            reject_reason: reason || 'Cancelled by admin'
+          });
+        });
+      } else {
+        await txRef.update({ 
+          status: 'Rejected',
+          reject_reason: reason || 'Cancelled by admin'
+        });
+      }
+      return true;
+    } catch (err) {
+      console.error('Admin SDK rejectWithdrawal error:', err);
+      return false;
+    }
+  },
+
+  async getSystemSettings() {
+    try {
+      const docRef = db.collection('settings').doc('config');
+      const snap = await docRef.get();
+      if (!snap.exists) {
+        const defaultConfig = {
+          min_withdraw: 150,
+          min_deposit: 50,
+          invite_commission: 10,
+          maintenance: false
+        };
+        await docRef.set(defaultConfig);
+        return defaultConfig;
+      }
+      return snap.data();
+    } catch (err) {
+      console.error('Admin SDK getSystemSettings error:', err);
+      return { min_withdraw: 150, min_deposit: 50, invite_commission: 10, maintenance: false };
+    }
+  },
+
+  async updateSystemSettings(settings) {
+    try {
+      const docRef = db.collection('settings').doc('config');
+      await docRef.set({
+        min_withdraw: parseFloat(settings.min_withdraw || 150),
+        min_deposit: parseFloat(settings.min_deposit || 50),
+        invite_commission: parseFloat(settings.invite_commission || 10),
+        maintenance: Boolean(settings.maintenance)
+      }, { merge: true });
+      return true;
+    } catch (err) {
+      console.error('Admin SDK updateSystemSettings error:', err);
+      return false;
+    }
+  },
+
+  async getBroadcast() {
+    try {
+      const docRef = db.collection('settings').doc('broadcast');
+      const snap = await docRef.get();
+      if (!snap.exists) {
+        const defaultBc = {
+          active: false,
+          type: 'text',
+          message: ''
+        };
+        await docRef.set(defaultBc);
+        return defaultBc;
+      }
+      return snap.data();
+    } catch (err) {
+      console.error('Admin SDK getBroadcast error:', err);
+      return { active: false, type: 'text', message: '' };
+    }
+  },
+
+  async updateBroadcast(broadcast) {
+    try {
+      const docRef = db.collection('settings').doc('broadcast');
+      await docRef.set({
+        active: Boolean(broadcast.active),
+        type: broadcast.type || 'text',
+        message: broadcast.message || ''
+      }, { merge: true });
+      return true;
+    } catch (err) {
+      console.error('Admin SDK updateBroadcast error:', err);
+      return false;
     }
   }
 };
