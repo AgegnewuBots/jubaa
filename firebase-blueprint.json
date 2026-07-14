@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account and profile data",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string", "description": "The unique identifier of the user (e.g. phone number)" },
+        "first_name": { "type": "string", "description": "User's display or first name" },
+        "username": { "type": "string", "description": "Username or password hash placeholder string" },
+        "main_balance": { "type": "number", "description": "Real/withdrawable cash balance" },
+        "play_balance": { "type": "number", "description": "Playable/bonus balance" },
+        "games_played": { "type": "integer", "description": "Total number of games played" },
+        "games_won": { "type": "integer", "description": "Total number of games won" },
+        "total_won": { "type": "number", "description": "Total amount of Br won" },
+        "invited": { "type": "integer", "description": "Number of users invited" },
+        "is_vip": { "type": "boolean", "description": "VIP status flag" },
+        "current_streak": { "type": "integer", "description": "Current consecutive wins" },
+        "highest_streak": { "type": "integer", "description": "Highest consecutive wins" }
+      },
+      "required": ["user_id"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial and game betting ledger entries",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "type": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" },
+        "time": { "type": "string" }
+      },
+      "required": ["user_id", "type", "amount", "status"]
+    },
+    "GameHistory": {
+      "title": "GameHistory",
+      "description": "Bingo game match play results",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "game_id": { "type": "string" },
+        "entry": { "type": "number" },
+        "status": { "type": "string" },
+        "result": { "type": "string" },
+        "time": { "type": "string" }
+      },
+      "required": ["user_id", "game_id", "entry", "status", "result"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Primary user configuration records"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Ledger of credits and debits"
+    },
+    "/game_history/{historyId}": {
+      "schema": "GameHistory",
+      "description": "Activity history of bingo rounds played"
+    }
+  }
+}

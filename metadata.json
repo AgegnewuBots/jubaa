@@ -1,0 +1,7 @@
+{
+  "name": "Juba Bingo",
+  "description": "A multiplayer Bingo Telegram Mini App with persistent game history, ranking leaderboards, and real-time multiplayer socket synchronization.",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

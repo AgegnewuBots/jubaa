@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUser(data) {
+      return data.user_id is string && data.user_id.size() <= 128 &&
+        (!data.keys().contains('first_name') || data.first_name is string) &&
+        (!data.keys().contains('username') || data.username is string) &&
+        (!data.keys().contains('main_balance') || data.main_balance is number) &&
+        (!data.keys().contains('play_balance') || data.play_balance is number) &&
+        (!data.keys().contains('games_played') || data.games_played is int) &&
+        (!data.keys().contains('games_won') || data.games_won is int) &&
+        (!data.keys().contains('total_won') || data.total_won is number) &&
+        (!data.keys().contains('invited') || data.invited is int) &&
+        (!data.keys().contains('is_vip') || data.is_vip is bool) &&
+        (!data.keys().contains('current_streak') || data.current_streak is int) &&
+        (!data.keys().contains('highest_streak') || data.highest_streak is int);
+    }
+
+    function isValidTransaction(data) {
+      return data.user_id is string && data.user_id.size() <= 128 &&
+        data.type is string && data.type.size() <= 64 &&
+        data.amount is number &&
+        data.status is string && data.status.size() <= 64;
+    }
+
+    function isValidGameHistory(data) {
+      return data.user_id is string && data.user_id.size() <= 128 &&
+        data.game_id is string && data.game_id.size() <= 128 &&
+        data.entry is number &&
+        data.status is string && data.status.size() <= 64 &&
+        data.result is string && data.result.size() <= 64;
+    }
+
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /transactions/{txId} {
+      allow read, write: if true;
+    }
+
+    match /game_history/{histId} {
+      allow read, write: if true;
+    }
+  }
+}
