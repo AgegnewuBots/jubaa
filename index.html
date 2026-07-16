@@ -612,13 +612,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
           <div class="input-group">
             <label>EMAIL OR PHONE NUMBER (ኢሜይል ወይም ስልክ ቁጥር)</label>
             <div class="input-wrap">
-              <input type="text" id="login-id" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678">
+              <input type="text" id="login-id" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678" onkeydown="if(event.key === 'Enter') doLogin()">
             </div>
           </div>
           <div class="input-group">
             <label>PASSWORD (የይለፍ ቃል)</label>
             <div class="input-wrap">
-              <input type="password" id="login-pass" class="auth-input" placeholder="••••••••">
+              <input type="password" id="login-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') doLogin()">
               <span class="eye-icon" onclick="togglePassword('login-pass')"><i class="fa-solid fa-eye"></i></span>
             </div>
           </div>
@@ -629,19 +629,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
           <div class="input-group">
             <label>FULL NAME (ሙሉ ስም)</label>
             <div class="input-wrap">
-              <input type="text" id="reg-name" class="auth-input" placeholder="e.g. Abebe Kebede">
+              <input type="text" id="reg-name" class="auth-input" placeholder="e.g. Abebe Kebede" onkeydown="if(event.key === 'Enter') doRegister()">
             </div>
           </div>
           <div class="input-group">
             <label>EMAIL OR PHONE NUMBER (ኢሜይል ወይም ስልክ ቁጥር)</label>
             <div class="input-wrap">
-              <input type="text" id="reg-phone" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678">
+              <input type="text" id="reg-phone" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678" onkeydown="if(event.key === 'Enter') doRegister()">
             </div>
           </div>
           <div class="input-group">
             <label>CREATE PASSWORD (የይለፍ ቃል)</label>
             <div class="input-wrap">
-              <input type="password" id="reg-pass" class="auth-input" placeholder="••••••••">
+              <input type="password" id="reg-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') doRegister()">
               <span class="eye-icon" onclick="togglePassword('reg-pass')"><i class="fa-solid fa-eye"></i></span>
             </div>
           </div>
@@ -664,7 +664,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         <div class="input-group" style="margin-bottom: 20px;">
           <label>CREATE PASSWORD (የይለፍ ቃል)</label>
           <div class="input-wrap">
-            <input type="password" id="tg-create-pass" class="auth-input" placeholder="••••••••">
+            <input type="password" id="tg-create-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') saveTgPassword()">
             <span class="eye-icon" onclick="togglePassword('tg-create-pass')"><i class="fa-solid fa-eye"></i></span>
           </div>
         </div>
@@ -828,7 +828,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       
       <!-- Share Result Button with custom style and tap/celebratory behavior -->
       <div style="margin: 18px 0; text-align: center; width: 100%;">
-        <button id="share-result-btn" onclick="shareWinnerResult()" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; border-radius: 50px; padding: 12px 30px; border: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out; outline: none; width: auto;">
+        <button id="share-result-btn" onclick="shareWinnerResult()" class="btn btn-primary btn-breath" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; border-radius: 50px; padding: 12px 30px; border: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out; outline: none; width: auto;">
           <i class="fa-solid fa-share-nodes" style="font-size: 15px;"></i>
           <span>Share Result (አጋራ)</span>
         </button>
@@ -1089,14 +1089,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         <div class="input-group" style="margin-bottom:16px;">
           <label>CURRENT PASSWORD (የአሁኑ የይለፍ ቃል)</label>
           <div class="input-wrap">
-            <input type="password" id="old-sec-pass" class="auth-input" placeholder="••••••••">
+            <input type="password" id="old-sec-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') saveNewPassword()">
             <span class="eye-icon" onclick="togglePassword('old-sec-pass')"><i class="fa-solid fa-eye"></i></span>
           </div>
         </div>
         <div class="input-group" style="margin-bottom:16px;">
           <label>NEW PASSWORD (አዲስ የይለፍ ቃል)</label>
           <div class="input-wrap">
-            <input type="password" id="new-sec-pass" class="auth-input" placeholder="••••••••">
+            <input type="password" id="new-sec-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') saveNewPassword()">
             <span class="eye-icon" onclick="togglePassword('new-sec-pass')"><i class="fa-solid fa-eye"></i></span>
           </div>
         </div>
@@ -1123,14 +1123,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         <div class="input-group" style="margin-bottom:12px;">
           <label>DEPOSIT AMOUNT (የገንዘብ መጠን) - Min 50 Br</label>
           <div class="input-wrap">
-            <input type="number" id="dep-req-amount" class="auth-input" placeholder="50" min="50" value="50">
+            <input type="number" id="dep-req-amount" class="auth-input" placeholder="50" min="50" value="50" onkeydown="if(event.key === 'Enter') submitClientDeposit()">
           </div>
         </div>
         
         <div class="input-group" style="margin-bottom:16px;">
           <label>TRANSFER REFERENCE / PHONE (የክፍያ ስልክ ቁጥር)</label>
           <div class="input-wrap">
-            <input type="text" id="dep-req-ref" class="auth-input" placeholder="09xxxxxxxx">
+            <input type="text" id="dep-req-ref" class="auth-input" placeholder="09xxxxxxxx" onkeydown="if(event.key === 'Enter') submitClientDeposit()">
           </div>
         </div>
         
@@ -1157,14 +1157,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         <div class="input-group" style="margin-bottom:12px;">
           <label>WITHDRAW AMOUNT (የማውጫ መጠን) - Min 150 Br</label>
           <div class="input-wrap">
-            <input type="number" id="with-req-amount" class="auth-input" placeholder="150" min="150" value="150">
+            <input type="number" id="with-req-amount" class="auth-input" placeholder="150" min="150" value="150" onkeydown="if(event.key === 'Enter') submitClientWithdraw()">
           </div>
         </div>
         
         <div class="input-group" style="margin-bottom:16px;">
           <label>RECEIVER ACCOUNT / PHONE (ገንዘብ የሚቀበሉበት ስልክ)</label>
           <div class="input-wrap">
-            <input type="text" id="with-req-phone" class="auth-input" placeholder="09xxxxxxxx">
+            <input type="text" id="with-req-phone" class="auth-input" placeholder="09xxxxxxxx" onkeydown="if(event.key === 'Enter') submitClientWithdraw()">
           </div>
         </div>
         
@@ -1204,7 +1204,24 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       100% { transform: scale(1); }
     }
     .share-bounce-anim {
-      animation: shareBounce 0.5s ease-out;
+      animation: shareBounce 0.5s ease-out !important;
+    }
+    @keyframes shareBreath {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 22px rgba(16, 185, 129, 0.7);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      }
+    }
+    .btn-breath {
+      animation: shareBreath 2s infinite ease-in-out;
     }
   </style>
 </div>
@@ -1982,6 +1999,41 @@ function togglePassword(inputId) {
   }
 }
 
+function getFriendlyAuthError(err, type) {
+  var code = err && err.code ? err.code : '';
+  var msg = err && err.message ? err.message : '';
+  
+  if (type === 'login') {
+    if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found' || 
+        msg.indexOf('invalid-credential') !== -1 || msg.indexOf('wrong-password') !== -1 || msg.indexOf('user-not-found') !== -1) {
+      return "Incorrect phone number/email or password. Please try again.\n\nያስገቡት ስልክ ቁጥር ወይም የይለፍ ቃል የተሳሳተ ነው። እባክዎ እንደገና ይሞክሩ።";
+    }
+    if (code === 'auth/too-many-requests' || msg.indexOf('too-many-requests') !== -1) {
+      return "Too many login attempts. This account has been temporarily disabled. Please try again later.\n\nበጣም ብዙ ሙከራዎች ተደርገዋል። መለያዎ ለጊዜው ታግዷል። እባክዎ ከተወሰነ ጊዜ በኋላ ይሞክሩ።";
+    }
+    return msg || "Login failed. Please try again.\n\nመግባት አልተቻለም። እባክዎ እንደገና ይሞክሩ።";
+  } else {
+    if (code === 'auth/email-already-in-use' || msg.indexOf('email-already-in-use') !== -1) {
+      return "This phone number/email is already registered. Please go to the Log In tab instead!\n\nይህ ስልክ ቁጥር ቀድሞ የተመዘገበ ነው። እባክዎ 'ግባ' (Log In) የሚለውን ተጠቅመው ይግቡ! 🚀";
+    }
+    if (code === 'auth/invalid-email' || msg.indexOf('invalid-email') !== -1) {
+      return "Invalid phone number or email format.\n\nየስልክ ቁጥር ወይም የኢሜይል አጻጻፍ ልክ አይደለም።";
+    }
+    if (code === 'auth/weak-password' || msg.indexOf('weak-password') !== -1) {
+      return "Password is too weak. Please use at least 6 characters.\n\nየይለፍ ቃሉ በጣም ደካማ ነው። እባክዎ ቢያንስ 6 ቁምፊዎች ይጠቀሙ።";
+    }
+    return msg || "Registration failed. Please try again.\n\nምዝገባው አልተሳካም። እባክዎ እንደገና ይሞክሩ።";
+  }
+}
+
+function showAuthError(message) {
+  if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.showAlert === 'function') {
+    window.Telegram.WebApp.showAlert(message);
+  } else {
+    alert(message);
+  }
+}
+
 async function doLogin() {
   var id = document.getElementById('login-id').value.trim();
   var pass = document.getElementById('login-pass').value.trim();
@@ -2022,7 +2074,8 @@ async function doLogin() {
     appInit();
   } catch (err) {
     console.error('Firebase sign in error:', err);
-    alert(err.message || 'Login failed');
+    var friendlyMsg = getFriendlyAuthError(err, 'login');
+    showAuthError(friendlyMsg);
   }
   btn.textContent = 'ENTER GAME';
 }
@@ -2062,7 +2115,8 @@ async function doRegister() {
     appInit();
   } catch (err) {
     console.error('Firebase registration error:', err);
-    alert(err.message || 'Registration failed');
+    var friendlyMsg = getFriendlyAuthError(err, 'register');
+    showAuthError(friendlyMsg);
   }
   btn.textContent = 'CREATE ACCOUNT';
 }
@@ -2958,7 +3012,7 @@ function shareWinnerResult() {
   }
   
   // Trigger secondary celebratory effect!
-  startConfetti();
+  triggerShareExplosion();
   
   var prizeText = document.getElementById('w-prize').textContent || '0';
   var shareText = "🏆 BINGO! I just won a match on Juba Bingo! 🎉\n💰 Card Prize Pool: " + prizeText + " ETB!\n🇪🇹 Come play the ultimate Ethiopian Bingo game right inside Telegram! Quick deposits, instant payouts, and huge jackpots!\n👉 Start playing now: https://t.me/JubaBingoBot";
@@ -3558,56 +3612,65 @@ function startConfetti() {
       p.x += p.speedX;
       p.y += p.speedY;
       
-      p.speedY += 0.22; // Gravity
-      p.speedX *= 0.98; // Drag
+      if (p.isExplosion) {
+        p.speedY += 0.20; // Explosion gravity
+        p.speedX *= 0.95; // Explosion drag
+        p.opacity -= p.decay || 0.015;
+      } else {
+        p.speedY += 0.22; // Gravity
+        p.speedX *= 0.98; // Drag
+        
+        // Fall off-screen handling
+        if (p.y > confettiCanvas.height) {
+          if (confettiParticles.length < 100 && Math.random() < 0.3) {
+            p.y = -20;
+            p.x = Math.random() * confettiCanvas.width;
+            p.speedY = Math.random() * 3 + 2;
+            p.speedX = (Math.random() - 0.5) * 3;
+            p.opacity = 1;
+          } else {
+            p.opacity -= 0.02;
+          }
+        }
+      }
       
       p.wobble += p.wobbleSpeed;
       p.rotation += p.rotationSpeed;
       
-      confettiCtx.save();
-      confettiCtx.translate(p.x, p.y);
-      confettiCtx.rotate(p.rotation);
-      confettiCtx.scale(Math.sin(p.wobble), 1);
-      
-      confettiCtx.fillStyle = p.color;
-      confettiCtx.globalAlpha = p.opacity;
-      
-      var shapeIdx = i % 3;
-      if (shapeIdx === 0) {
-        // Circle
-        confettiCtx.beginPath();
-        confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-        confettiCtx.fill();
-      } else if (shapeIdx === 1) {
-        // Triangle
-        confettiCtx.beginPath();
-        confettiCtx.moveTo(0, -p.size / 2);
-        confettiCtx.lineTo(p.size / 2, p.size / 2);
-        confettiCtx.lineTo(-p.size / 2, p.size / 2);
-        confettiCtx.closePath();
-        confettiCtx.fill();
-      } else {
-        // Rectangle
-        confettiCtx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-      }
-      
-      confettiCtx.restore();
-      
-      // Fall off-screen handling
-      if (p.y > confettiCanvas.height) {
-        if (confettiParticles.length < 100 && Math.random() < 0.3) {
-          p.y = -20;
-          p.x = Math.random() * confettiCanvas.width;
-          p.speedY = Math.random() * 3 + 2;
-          p.speedX = (Math.random() - 0.5) * 3;
-          p.opacity = 1;
-        } else {
-          p.opacity -= 0.02;
-        }
-      }
-      
       if (p.opacity > 0) {
         allDead = false;
+        
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate(p.rotation);
+        confettiCtx.scale(Math.sin(p.wobble), 1);
+        
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.globalAlpha = p.opacity;
+        
+        var shapeIdx = i % 4;
+        if (shapeIdx === 0) {
+          // Circle
+          confettiCtx.beginPath();
+          confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          confettiCtx.fill();
+        } else if (shapeIdx === 1) {
+          // Star
+          drawStar(confettiCtx, 0, 0, 5, p.size / 2, p.size / 4);
+        } else if (shapeIdx === 2) {
+          // Triangle
+          confettiCtx.beginPath();
+          confettiCtx.moveTo(0, -p.size / 2);
+          confettiCtx.lineTo(p.size / 2, p.size / 2);
+          confettiCtx.lineTo(-p.size / 2, p.size / 2);
+          confettiCtx.closePath();
+          confettiCtx.fill();
+        } else {
+          // Rectangle
+          confettiCtx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+        }
+        
+        confettiCtx.restore();
       }
     }
     
@@ -3617,6 +3680,73 @@ function startConfetti() {
   }
   
   updateAndDraw();
+}
+
+function triggerShareExplosion() {
+  // Ensure the background rain is also running
+  startConfetti();
+  
+  var canvas = document.getElementById('confetti-canvas');
+  if (!canvas) return;
+  
+  var originX = canvas.width / 2;
+  var originY = canvas.height / 2;
+  
+  // Align explosion center exactly with the Share Result Button coordinates
+  var btn = document.getElementById('share-result-btn');
+  if (btn) {
+    var btnRect = btn.getBoundingClientRect();
+    var canvasRect = canvas.getBoundingClientRect();
+    originX = (btnRect.left + btnRect.width / 2) - canvasRect.left;
+    originY = (btnRect.top + btnRect.height / 2) - canvasRect.top;
+  }
+  
+  var colors = ['#ffd600', '#ff007b', '#00e5ff', '#10b981', '#ff5722', '#8b5cf6', '#ffffff'];
+  
+  // Generate 120 custom point-sourced high velocity celebratory particles
+  for (var i = 0; i < 120; i++) {
+    var angle = Math.random() * Math.PI * 2;
+    var speed = Math.random() * 15 + 5;
+    confettiParticles.push({
+      x: originX,
+      y: originY,
+      size: Math.random() * 10 + 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speedX: Math.cos(angle) * speed,
+      speedY: Math.sin(angle) * speed,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.4,
+      wobble: Math.random() * 10,
+      wobbleSpeed: Math.random() * 0.2 + 0.1,
+      opacity: 1.0,
+      decay: Math.random() * 0.015 + 0.012,
+      isExplosion: true
+    });
+  }
+}
+
+function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+  var rot = Math.PI / 2 * 3;
+  var x = cx;
+  var y = cy;
+  var step = Math.PI / spikes;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outerRadius);
+  for (var i = 0; i < spikes; i++) {
+    x = cx + Math.cos(rot) * outerRadius;
+    y = cy + Math.sin(rot) * outerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
+
+    x = cx + Math.cos(rot) * innerRadius;
+    y = cy + Math.sin(rot) * innerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
+  }
+  ctx.lineTo(cx, cy - outerRadius);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function stopConfetti() {

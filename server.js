@@ -801,4 +801,33 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`JUBA BINGO server running on port ${PORT}`);
+  
+  // Ensure all existing users have at least 50 ETB play balance bonus on server startup
+  (async () => {
+    try {
+      const snap = await db.collection('users').get();
+      const batch = db.batch();
+      let updatedCount = 0;
+      
+      snap.forEach(docSnap => {
+        const u = docSnap.data();
+        const currentBonus = typeof u.play_balance === 'number' ? u.play_balance : parseFloat(u.play_balance || 0);
+        if (isNaN(currentBonus) || currentBonus < 50) {
+          batch.update(docSnap.ref, {
+            play_balance: 50
+          });
+          updatedCount++;
+        }
+      });
+      
+      if (updatedCount > 0) {
+        await batch.commit();
+        console.log(`[Database Setup] Credited minimum 50 ETB play bonus to ${updatedCount} users.`);
+      } else {
+        console.log(`[Database Setup] All users are fully initialized with 50+ ETB play bonus.`);
+      }
+    } catch (err) {
+      console.error('Error running startup bonus check:', err);
+    }
+  })();
 });
