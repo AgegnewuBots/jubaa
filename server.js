@@ -102,15 +102,13 @@ function requireAdmin(req, res, next) {
   }
 }
 
-// Client configuration endpoint (for maintenance mode, broadcast notifications, etc.)
+// Client configuration endpoint (for maintenance mode, etc.)
 app.get('/api/config', async (req, res) => {
   try {
     const settings = await db.getSystemSettings();
-    const broadcast = await db.getBroadcast();
     res.json({
       success: true,
-      settings,
-      broadcast
+      settings
     });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -226,6 +224,17 @@ app.post('/api/admin/users/unban', requireAdmin, async (req, res) => {
   }
 });
 
+app.post('/api/admin/users/grant_bonus_all', requireAdmin, async (req, res) => {
+  const { amount } = req.body;
+  const grantAmount = parseFloat(amount) || 50;
+  const success = await db.grantBonusAllUsers(grantAmount);
+  if (success) {
+    res.json({ success: true, message: `Successfully granted ${grantAmount} ETB play bonus to all users.` });
+  } else {
+    res.status(400).json({ error: 'Failed to grant bonus to all users.' });
+  }
+});
+
 app.get('/api/admin/deposits', requireAdmin, async (req, res) => {
   try {
     const deposits = await db.getPendingDeposits();
@@ -326,25 +335,6 @@ app.post('/api/admin/settings', requireAdmin, async (req, res) => {
     res.json({ success: true });
   } else {
     res.status(400).json({ error: 'Failed to update settings' });
-  }
-});
-
-app.get('/api/admin/broadcast', requireAdmin, async (req, res) => {
-  try {
-    const broadcast = await db.getBroadcast();
-    res.json({ success: true, broadcast });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to retrieve broadcast settings' });
-  }
-});
-
-app.post('/api/admin/broadcast', requireAdmin, async (req, res) => {
-  const { active, type, message } = req.body;
-  const success = await db.updateBroadcast({ active, type, message });
-  if (success) {
-    res.json({ success: true });
-  } else {
-    res.status(400).json({ error: 'Failed to update broadcast settings' });
   }
 });
 

@@ -825,6 +825,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="winner-card-box" id="w-card-box"><div class="winner-card-hdr" id="w-card-hdr"></div><div class="winner-card-grid" id="w-card-grid"></div></div>
       <div class="prize-box"><div class="prize-label">Prize Distributed</div><div class="prize-amount" id="w-prize">0</div><div class="prize-each" id="w-prize-each"></div></div>
       <div class="distribute-bar"><div class="distribute-fill" id="dist-fill"></div></div>
+      
+      <!-- Share Result Button with custom style and tap/celebratory behavior -->
+      <div style="margin: 18px 0; text-align: center; width: 100%;">
+        <button id="share-result-btn" onclick="shareWinnerResult()" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; border-radius: 50px; padding: 12px 30px; border: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out; outline: none; width: auto;">
+          <i class="fa-solid fa-share-nodes" style="font-size: 15px;"></i>
+          <span>Share Result (አጋራ)</span>
+        </button>
+      </div>
+
       <div class="next-label">Next round starts in</div>
       <div class="next-count" id="next-count">10</div>
     </div>
@@ -1164,24 +1173,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
     </div>
   </div>
 
-  <!-- Server Broadcast Top Notice Bar -->
-  <div id="broadcast-bar" style="display:none; position:fixed; top:0; left:0; width:100%; z-index:9999; background:linear-gradient(90deg, #ff6b00 0%, #ff8c00 100%); color:#fff; padding:10px 15px; font-size:12px; font-weight:700; text-align:center; box-shadow:0 4px 15px rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; gap:8px;">
-    <i class="fa-solid fa-bullhorn" style="animation: bellPulse 1.5s infinite;"></i>
-    <span id="broadcast-bar-text">Announcements loading...</span>
-  </div>
-
-  <!-- Server Broadcast Modal Popup -->
-  <div class="rules-screen" id="broadcast-modal" style="z-index: 10100; background:rgba(8,8,22,0.95);">
-    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;">
-      <div class="auth-box" style="border: 1px solid var(--orange); box-shadow: 0 0 20px rgba(255,107,0,0.2);">
-        <div style="font-size:44px; color:var(--orange); margin-bottom:12px;"><i class="fa-solid fa-bullhorn"></i></div>
-        <div class="auth-title">ANNOUNCEMENT / ማሳሰቢያ</div>
-        <p style="font-size:13px; color:#fff; text-align:center; margin-bottom:20px; line-height:1.6; word-break:break-word;" id="broadcast-modal-text">No active announcements</p>
-        <button class="auth-btn" style="background-color:var(--orange);" onclick="closeBroadcastModal()">DISMISS (እሺ)</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Account Suspended/Banned Screen -->
   <div class="rules-screen" id="banned-overlay" style="z-index: 11000; background:rgba(8,8,22,0.98); display:none;">
     <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center;">
@@ -1205,6 +1196,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       0% { transform: scale(1); }
       50% { transform: scale(1.15); }
       100% { transform: scale(1); }
+    }
+    @keyframes shareBounce {
+      0% { transform: scale(1); }
+      30% { transform: scale(0.85); filter: brightness(1.2); }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .share-bounce-anim {
+      animation: shareBounce 0.5s ease-out;
     }
   </style>
 </div>
@@ -2211,52 +2211,22 @@ async function submitClientWithdraw() {
   }
 }
 
-// Client Configuration & Broadcast Notice Receivers
-var activeBroadcastId = null;
-
+// Client Configuration Receiver
 async function fetchSystemConfig() {
   try {
     var res = await fetch(API_BASE + '/api/config');
     var data = await res.json();
     if (data.success) {
-      // 1. Handle Maintenance Mode
+      // Handle Maintenance Mode
       if (data.settings && data.settings.maintenance) {
         document.getElementById('maintenance-overlay').style.display = 'flex';
       } else {
         document.getElementById('maintenance-overlay').style.display = 'none';
       }
-      
-      // 2. Handle Broadcast Notice
-      if (data.broadcast && data.broadcast.active && data.broadcast.message) {
-        if (data.broadcast.type === 'modal') {
-          // Intrusive Modal Alert
-          var savedDismissedBc = localStorage.getItem('dismissed_broadcast_msg');
-          if (savedDismissedBc !== data.broadcast.message) {
-            document.getElementById('broadcast-modal-text').textContent = data.broadcast.message;
-            document.getElementById('broadcast-modal').classList.add('active');
-          }
-          document.getElementById('broadcast-bar').style.display = 'none';
-        } else {
-          // Standard Text Notice bar
-          document.getElementById('broadcast-bar-text').textContent = data.broadcast.message;
-          document.getElementById('broadcast-bar').style.display = 'flex';
-          document.getElementById('broadcast-modal').classList.remove('active');
-        }
-      } else {
-        document.getElementById('broadcast-bar').style.display = 'none';
-        document.getElementById('broadcast-modal').classList.remove('active');
-      }
     }
   } catch (e) {
     console.error('Failed to sync settings config:', e);
   }
-}
-
-function closeBroadcastModal() {
-  if (soundOn) sfx.playClick();
-  var bcMsg = document.getElementById('broadcast-modal-text').textContent;
-  localStorage.setItem('dismissed_broadcast_msg', bcMsg);
-  document.getElementById('broadcast-modal').classList.remove('active');
 }
 
 async function saveNewPassword() {
@@ -2974,6 +2944,97 @@ function showObserverWinner(data){
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('nav-home').classList.add('active');
   startWinnerCountdown();
+}
+
+function shareWinnerResult() {
+  if (soundOn) sfx.playClick();
+  
+  var btn = document.getElementById('share-result-btn');
+  if (btn) {
+    btn.classList.add('share-bounce-anim');
+    setTimeout(function() {
+      btn.classList.remove('share-bounce-anim');
+    }, 500);
+  }
+  
+  // Trigger secondary celebratory effect!
+  startConfetti();
+  
+  var prizeText = document.getElementById('w-prize').textContent || '0';
+  var shareText = "🏆 BINGO! I just won a match on Juba Bingo! 🎉\n💰 Card Prize Pool: " + prizeText + " ETB!\n🇪🇹 Come play the ultimate Ethiopian Bingo game right inside Telegram! Quick deposits, instant payouts, and huge jackpots!\n👉 Start playing now: https://t.me/JubaBingoBot";
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'Juba Bingo Winner!',
+      text: shareText,
+      url: 'https://t.me/JubaBingoBot'
+    }).catch(function(err) {
+      console.log('Native share failed, using clipboard fallback:', err);
+      copyTextToClipboard(shareText);
+    });
+  } else {
+    copyTextToClipboard(shareText);
+  }
+}
+
+function copyTextToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      showToast('Winner status and invitation link copied to clipboard! Share it with your friends! 🎉\nየአሸናፊነት መረጃው ኮፒ ተደርጓል። ለጓደኞችዎ ያጋሩት! 🎉');
+    }).catch(function() {
+      fallbackCopyShareText(text);
+    });
+  } else {
+    fallbackCopyShareText(text);
+  }
+}
+
+function fallbackCopyShareText(text) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showToast('Winner status and invitation link copied to clipboard! Share it with your friends! 🎉\nየአሸናፊነት መረጃው ኮፒ ተደርጓል። ለጓደኞችዎ ያጋሩት! 🎉');
+  } catch (err) {
+    alert('Share text: ' + text);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showToast(message) {
+  var toast = document.createElement('div');
+  toast.className = 'custom-toast';
+  toast.style.position = 'fixed';
+  toast.style.bottom = '80px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.background = 'rgba(16, 185, 129, 0.95)';
+  toast.style.color = '#fff';
+  toast.style.padding = '12px 20px';
+  toast.style.borderRadius = '12px';
+  toast.style.fontSize = '12px';
+  toast.style.fontWeight = 'bold';
+  toast.style.textAlign = 'center';
+  toast.style.zIndex = '10500';
+  toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+  toast.style.minWidth = '280px';
+  toast.style.transition = 'opacity 0.3s ease';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(function() {
+    toast.style.opacity = '0';
+    setTimeout(function() {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }, 4000);
 }
 
 function startWinnerCountdown(){

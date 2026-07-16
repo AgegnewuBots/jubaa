@@ -65,9 +65,6 @@
         <button class="menu-item" onclick="switchTab('settings')">
           <i class="fa-solid fa-gears"></i> System Settings
         </button>
-        <button class="menu-item" onclick="switchTab('broadcast')">
-          <i class="fa-solid fa-bullhorn"></i> Broadcast
-        </button>
       </nav>
       <div class="sidebar-footer">
         <button class="btn btn-danger btn-full" onclick="logoutAdmin()">
@@ -370,43 +367,28 @@
             </div>
           </div>
         </div>
-      </section>
 
-      <!-- TAB: Broadcast -->
-      <section id="tab-broadcast" class="tab-pane">
-        <div class="card">
-          <div class="card-header">
-            <h2>Broadcast System Announcement</h2>
-            <p style="color:var(--muted); font-size:12px;">Push a notice or dynamic notification popup directly to all logged-in players.</p>
+        <!-- Promotional Mass operations -->
+        <div class="card" style="margin-top: 24px; border: 1px solid rgba(16, 185, 129, 0.25);">
+          <div class="card-header" style="background: rgba(16, 185, 129, 0.05);">
+            <h2 style="color: var(--green); display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px;">
+              <i class="fa-solid fa-gift"></i> Mass User Bonus Distribution
+            </h2>
           </div>
           <div class="card-body">
-            <div id="broadcast-alert" class="alert-box success" style="display:none;">Broadcast updated successfully!</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+              Instantly credit promotional playable bonus (Play Balance) to <strong>ALL registered users</strong> on the platform. This is highly effective for marketing campaigns and re-engaging active players.
+            </p>
+            <div id="bonus-alert" class="alert-box success" style="display:none; margin-bottom: 16px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 13px;"></div>
             
-            <div class="settings-form">
-              <div class="form-group">
-                <label>Active Status</label>
-                <div class="toggle-wrap">
-                  <input type="checkbox" id="broadcast-active" class="toggle-checkbox">
-                  <span class="toggle-desc">Enable this announcement in user interface</span>
-                </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
+              <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 8px;">Playable Bonus Amount to Grant (ETB)</label>
+                <input type="number" id="mass-bonus-amount" value="50" min="1" style="background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; width: 100%;">
               </div>
-              
-              <div class="form-group" style="margin-top: 16px;">
-                <label>Notification Popup Type</label>
-                <select id="broadcast-type">
-                  <option value="text">Standard Text Bar Notice (Top Header)</option>
-                  <option value="modal">Intrusive Modal Alert (For critical news)</option>
-                </select>
-              </div>
-
-              <div class="form-group" style="margin-top: 16px;">
-                <label>Broadcast Announcement Content</label>
-                <textarea id="broadcast-message" rows="5" placeholder="E.g., Special bonus weekend is active! Deposit 100 ETB and get 20% cashback."></textarea>
-              </div>
-
-              <div style="margin-top: 24px;">
-                <button class="btn btn-primary" onclick="saveBroadcastSettings()">
-                  <i class="fa-solid fa-bullhorn"></i> Send Broadcast Announcement
+              <div style="flex: 0 0 auto;">
+                <button class="btn btn-primary" onclick="distributeMassBonus()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; box-shadow: 0 4px 15px rgba(16,185,129,0.3); padding: 11px 22px; height: 42px;">
+                  <i class="fa-solid fa-paper-plane"></i> Distribute Bonus to All Users
                 </button>
               </div>
             </div>

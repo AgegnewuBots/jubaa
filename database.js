@@ -699,6 +699,25 @@ module.exports = {
     }
   },
 
+  async grantBonusAllUsers(amount) {
+    try {
+      const snap = await db.collection('users').get();
+      const batch = db.batch();
+      snap.forEach(docSnap => {
+        const u = docSnap.data();
+        const currentBonus = typeof u.play_balance === 'number' ? u.play_balance : parseFloat(u.play_balance || 0);
+        batch.update(docSnap.ref, {
+          play_balance: currentBonus + amount
+        });
+      });
+      await batch.commit();
+      return true;
+    } catch (err) {
+      console.error('Admin SDK grantBonusAllUsers error:', err);
+      return false;
+    }
+  },
+
   async getPendingDeposits() {
     return this.getTransactionsByTypeAndStatus('deposit', 'Pending');
   },
@@ -959,41 +978,6 @@ module.exports = {
       return true;
     } catch (err) {
       console.error('Admin SDK updateSystemSettings error:', err);
-      return false;
-    }
-  },
-
-  async getBroadcast() {
-    try {
-      const docRef = db.collection('settings').doc('broadcast');
-      const snap = await docRef.get();
-      if (!snap.exists) {
-        const defaultBc = {
-          active: false,
-          type: 'text',
-          message: ''
-        };
-        await docRef.set(defaultBc);
-        return defaultBc;
-      }
-      return snap.data();
-    } catch (err) {
-      console.error('Admin SDK getBroadcast error:', err);
-      return { active: false, type: 'text', message: '' };
-    }
-  },
-
-  async updateBroadcast(broadcast) {
-    try {
-      const docRef = db.collection('settings').doc('broadcast');
-      await docRef.set({
-        active: Boolean(broadcast.active),
-        type: broadcast.type || 'text',
-        message: broadcast.message || ''
-      }, { merge: true });
-      return true;
-    } catch (err) {
-      console.error('Admin SDK updateBroadcast error:', err);
       return false;
     }
   }

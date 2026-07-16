@@ -139,8 +139,7 @@ function switchTab(tabId) {
     withdrawals: { h: 'Withdrawal Approvals', s: 'Approve or reject manual withdrawal requests safely' },
     transactions: { h: 'Transaction Stream Ledger', s: 'Audit log of deposits, bets, wins, and withdrawals' },
     games: { h: 'Game Play History Logs', s: 'Historical activity log of all user played rounds' },
-    settings: { h: 'System Configurations', s: 'Customize minimum limits, game options, or lock platform' },
-    broadcast: { h: 'Dynamic Server Broadcast', s: 'Alert active players with instant topbar notes or mod popups' }
+    settings: { h: 'System Configurations', s: 'Customize minimum limits, game options, or lock platform' }
   };
   
   if (headers[tabId]) {
@@ -184,9 +183,6 @@ async function loadTabData(tabId) {
         break;
       case 'settings':
         await loadSettingsData();
-        break;
-      case 'broadcast':
-        await loadBroadcastData();
         break;
     }
   } catch (err) {
@@ -465,37 +461,44 @@ async function saveSystemSettings() {
   }
 }
 
-// Load Broadcast Settings
-async function loadBroadcastData() {
-  const data = await apiRequest('/api/admin/broadcast');
-  if (data.broadcast) {
-    const bc = data.broadcast;
-    document.getElementById('broadcast-active').checked = Boolean(bc.active);
-    document.getElementById('broadcast-type').value = bc.type || 'text';
-    document.getElementById('broadcast-message').value = bc.message || '';
+// Mass User Bonus Distribution
+async function distributeMassBonus() {
+  const amountInput = document.getElementById('mass-bonus-amount');
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    alert('Please enter a valid positive bonus amount (እባክዎ ትክክለኛ የጉርሻ መጠን ያስገቡ)');
+    return;
   }
-}
-
-// Save Broadcast Settings
-async function saveBroadcastSettings() {
-  const active = document.getElementById('broadcast-active').checked;
-  const type = document.getElementById('broadcast-type').value;
-  const message = document.getElementById('broadcast-message').value;
+  
+  const confirmMsg = `Are you absolutely sure you want to grant ${amount} ETB Playable Bonus to ALL registered users? This operation will modify the database for all players.\n\nለመላው ተጠቃሚዎች ${amount} ብር የጉርሻ ክፍያ ለመስጠት እርግጠኛ ነዎት?`;
+  if (!confirm(confirmMsg)) {
+    return;
+  }
   
   try {
-    const res = await apiRequest('/api/admin/broadcast', 'POST', {
-      active,
-      type,
-      message
-    });
+    const btn = document.querySelector('button[onclick="distributeMassBonus()"]');
+    const oldText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    
+    const res = await apiRequest('/api/admin/users/grant_bonus_all', 'POST', { amount });
+    
+    btn.disabled = false;
+    btn.innerHTML = oldText;
     
     if (res.success) {
-      const alertBox = document.getElementById('broadcast-alert');
+      const alertBox = document.getElementById('bonus-alert');
+      alertBox.textContent = `Success! Credited ${amount} ETB playable bonus to all registered users.`;
       alertBox.style.display = 'block';
-      setTimeout(() => alertBox.style.display = 'none', 3000);
+      setTimeout(() => alertBox.style.display = 'none', 5000);
+      
+      // Refresh user table and statistics automatically
+      loadTabData(currentTab);
+    } else {
+      alert('Failed to distribute bonus: ' + (res.error || 'Unknown error'));
     }
   } catch (err) {
-    alert('Failed to update broadcast: ' + err.message);
+    alert('Network error occurred: ' + err.message);
   }
 }
 
