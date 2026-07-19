@@ -622,8 +622,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div id="auth-spinner-container" style="display: flex; flex-direction: column; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 22px 30px; border-radius: 20px; backdrop-filter: blur(10px); margin-bottom: 15px;">
         <div class="spinner-modern" style="width: 28px; height: 28px; border: 3px solid rgba(255,107,0,0.15); border-top-color: var(--orange); border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
         <div style="font-size: 13px; color: var(--muted); font-weight: 600; line-height: 1.5;" id="splash-loading-text">
-          Verifying secure game session...<br>
-          <span style="font-size: 11px; opacity: 0.7; font-weight: 500;">የጨዋታ ክፍለ ጊዜ በመጀመር ላይ...</span>
+          Loading...
         </div>
       </div>
 
@@ -1322,8 +1321,25 @@ function initTelegram() {
         tgUser = { id: savedId, first_name: savedName, username: savedUsername };
         updateStakeProfile();
       } else {
-        tgUserId = null;
-        tgUser = null;
+        // Out of Telegram Mini App, no saved id. Generate demo ID & login instantly!
+        var demoId = 'demo_' + Math.floor(Math.random() * 900000000 + 100000000);
+        var demoName = 'Demo Player';
+        var demoUsername = demoId;
+        
+        localStorage.setItem('bingio_user_id', demoId);
+        localStorage.setItem('bingio_user_name', demoName);
+        localStorage.setItem('bingio_user_username', demoUsername);
+        
+        tgUserId = demoId;
+        tgUser = { id: demoId, first_name: demoName, username: demoUsername };
+        updateStakeProfile();
+        
+        // Quick background sync register with the backend
+        fetch(API_BASE + '/api/auth/register', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ name: demoName, phone: demoId, password: 'tg_' + demoId })
+        }).catch(function(){});
       }
     }
   } catch (e) {
@@ -4417,6 +4433,7 @@ function handleAutoLogout() {
 });
 
 function appInit() {
+  initTelegram();
   if (tgUserId) {
     // Authenticated via Telegram or localStorage
     updateUserInfo();
