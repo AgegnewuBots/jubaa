@@ -507,7 +507,7 @@ const io = new Server(server, {
 // Global Game Configuration
 const globalGame = {
   roomId: 'global',
-  status: 'waiting',
+  status: 'waiting', // 'waiting', 'running', 'celebrating'
   timeLeft: 60,
   gameId: generateGameId(),
   calledNumbers: [],
@@ -516,12 +516,13 @@ const globalGame = {
   timer: null,
   maxWinners: 1,
   ballTimer: null,
-  totalPot: 0
+  totalPot: 0,
+  streaksUpdated: false
 };
 
 // Start countdown logic for the global game
 function startGameCountdown(game) {
-  if (game.timer) return;
+  if (game.timer) clearInterval(game.timer);
   game.timer = setInterval(() => {
     if (game.status !== 'waiting') return;
     
@@ -530,7 +531,8 @@ function startGameCountdown(game) {
     io.to(game.roomId).emit('countdown_update', {
       room: game.roomId,
       game_id: game.gameId,
-      time_left: game.timeLeft
+      time_left: game.timeLeft,
+      status: game.status
     });
     
     if (game.timeLeft <= 0) {
@@ -567,6 +569,12 @@ function tryStartGame(game) {
     // No players, reset countdown and keep waiting
     game.timeLeft = 60;
     game.gameId = generateGameId();
+    io.to(game.roomId).emit('countdown_update', {
+      room: game.roomId,
+      game_id: game.gameId,
+      time_left: game.timeLeft,
+      status: game.status
+    });
   }
 }
 
@@ -653,6 +661,14 @@ function endGame(game) {
   game.calledNumbers = [];
   game.winners = [];
   game.streaksUpdated = false; // Reset flag for next game
+  game.totalPot = 0;
+  
+  // Broadcast the new game/lobby reset to all connected sockets
+  io.to(game.roomId).emit('round_reset', {
+    room: game.roomId,
+    game_id: game.gameId,
+    time_left: game.timeLeft
+  });
   
   startGameCountdown(game);
 }
@@ -767,29 +783,32 @@ io.on('connection', (socket) => {
         cardIndex: card_index
       });
       
-      // If we reached max winners, end round
-      if (globalGame.winners.length >= globalGame.maxWinners) {
+      // Stop the active ball calling immediately
+      if (globalGame.ballTimer) {
         clearInterval(globalGame.ballTimer);
         globalGame.ballTimer = null;
-        
-        const totalPrize = Math.round(globalGame.totalPot * 0.8);
-        
-        io.to(globalGame.roomId).emit('game_ended', {
-          room: globalGame.roomId,
-          game_id: globalGame.gameId,
-          winners: globalGame.winners,
-          total_prize: totalPrize
-        });
-        
-        if (!globalGame.streaksUpdated) {
-          updateStreaksOnGameEnd(globalGame.players, globalGame.winners);
-          globalGame.streaksUpdated = true;
-        }
-        
-        setTimeout(() => {
-          endGame(globalGame);
-        }, 15000); // Wait 15s to show winners screen before new game
       }
+      
+      globalGame.status = 'celebrating';
+      
+      const totalPrize = Math.round(globalGame.totalPot * 0.8);
+      
+      io.to(globalGame.roomId).emit('game_ended', {
+        room: globalGame.roomId,
+        game_id: globalGame.gameId,
+        winners: globalGame.winners,
+        total_prize: totalPrize
+      });
+      
+      if (!globalGame.streaksUpdated) {
+        updateStreaksOnGameEnd(globalGame.players, globalGame.winners);
+        globalGame.streaksUpdated = true;
+      }
+      
+      // Exactly 5 seconds celebration, then reset game to 'waiting' state and start 60s countdown
+      setTimeout(() => {
+        endGame(globalGame);
+      }, 5000);
     }
   });
 

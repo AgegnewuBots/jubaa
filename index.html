@@ -734,7 +734,36 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="stat-box"><div class="stat-label" id="lbl-win-home">WIN</div><div class="stat-val green" id="s-win-sel">0</div></div>
       <div class="stat-box"><div class="stat-label" id="lbl-time-home">TIME LEFT</div><div class="stat-val yellow" id="s-time">60s</div></div>
     </div>
-    <div id="select-area">
+    <div id="select-area" style="position: relative; display: flex; flex-direction: column;">
+      <!-- Glassmorphic bought-overlay for ticket locking -->
+      <div id="bought-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(10, 25, 41, 0.9); backdrop-filter:blur(8px); display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; z-index:100; border-radius:12px;">
+        <div style="background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%); width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 20px;">
+          <i class="fa-solid fa-circle-check" style="color:var(--green); font-size:64px; filter:drop-shadow(0 0 15px rgba(16,185,129,0.5));"></i>
+        </div>
+        <h2 style="font-size:20px; font-weight:800; color:#fff; margin-bottom:10px; letter-spacing:0.5px;">TICKET PURCHASED!</h2>
+        <p style="font-size:14px; color:var(--muted); max-width:280px; line-height:1.5; margin-bottom: 20px;">
+          Your cards are locked in. The synchronized game is starting soon!
+          <br><span style="color:var(--orange); font-size:12px; font-weight:600;">ካርቴላዎ ተገዝቷል። ጨዋታው በቅርቡ ይጀምራል!</span>
+        </p>
+        <div class="stat-box" style="background:#132f4f; border:1px solid #1e4976; padding:12px 24px; border-radius:12px; min-width:180px;">
+          <div style="font-size:10px; color:#4a9eff; letter-spacing:1px; margin-bottom:4px;">GAME ID</div>
+          <div style="font-size:18px; font-weight:800; color:#fff;" id="bought-game-id">—</div>
+        </div>
+        <p id="bought-countdown-text" style="font-size:13px; color:#ffd700; font-weight:700; margin-top:20px;"></p>
+      </div>
+
+      <!-- Active running-overlay to block betting during game -->
+      <div id="running-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(10, 25, 41, 0.95); backdrop-filter:blur(8px); display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; z-index:100; border-radius:12px;">
+        <div style="background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%); width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 20px;">
+          <i class="fa-solid fa-hourglass-half" style="color:var(--orange); font-size:64px; filter:drop-shadow(0 0 15px rgba(245,158,11,0.4));"></i>
+        </div>
+        <h2 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:10px; letter-spacing:0.5px; text-transform:uppercase;">GAME IN PROGRESS</h2>
+        <p style="font-size:13px; color:var(--muted); max-width:280px; line-height:1.5;">
+          A synchronized round is currently active. Please wait for the next countdown to buy a ticket.
+          <br><span style="color:var(--orange); font-size:12px; font-weight:600; margin-top:5px; display:inline-block;">ጨዋታው በመካሄድ ላይ ነው። እባክዎ ቀጣዩን ዙር ይጠብቁ።</span>
+        </p>
+      </div>
+
       <div style="padding:5px 12px; display:flex; justify-content:flex-start;">
         <button onclick="backToStake()" style="background:transparent; border:1px solid var(--orange); color:var(--orange); padding:6px 12px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; transition: all .2s; letter-spacing:0.3px; text-shadow:0 0 6px rgba(255,107,53,0.4);"><i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>Back/Change stake</button>
       </div>
@@ -742,8 +771,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="game-id-bar">Game ID: <span id="game-id-label">—</span></div>
       <div class="select-info" id="home-select-info">YOU CAN SELECT UP TO <span>2 CARDS</span></div>
       <div class="cards-scroll"><div class="cards-grid" id="cards-grid"></div></div>
-      <div class="bottom-bar">
-        <div class="selected-info">Selected: <strong id="sel-count">0</strong> / 2</div>
+      <div class="bottom-bar" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 16px;">
+        <div class="selected-info" style="margin-bottom: 4px;">Selected: <strong id="sel-count">0</strong> / 2</div>
+        <button id="buy-ticket-btn" onclick="buyTicket()" class="btn btn-primary btn-breath" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+          <i class="fa-solid fa-ticket"></i> CONFIRM & BUY TICKET (ካርቴላ ይግዙ)
+        </button>
       </div>
     </div>
     <div id="wait-area" style="display:none;flex:1;flex-direction:column;">
@@ -869,6 +901,30 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         <div class="stat-card"><div class="sv" id="p-invited">0</div><div class="sl" id="lbl-prof-invited">Users Invited</div></div>
         <div class="stat-card"><div class="sv" id="p-cur-streak">0</div><div class="sl" id="lbl-prof-cur-streak"><i class="fa-solid fa-fire" style="color:var(--orange); margin-right:4px;"></i>Current Streak</div></div>
         <div class="stat-card"><div class="sv" id="p-max-streak">0</div><div class="sl" id="lbl-prof-max-streak"><i class="fa-solid fa-trophy" style="color:var(--yellow); margin-right:4px;"></i>Highest Streak</div></div>
+      </div>
+
+      <!-- Referral Program Card -->
+      <div class="section-title" id="lbl-prof-referral-title" style="margin-top: 15px;"><i class="fa-solid fa-user-plus" style="color:var(--green); margin-right:6px;"></i>Referral Program</div>
+      <div class="settings-panel" style="margin: 0 16px 20px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.04) 100%); border: 1px solid rgba(16, 185, 129, 0.2); padding: 18px; border-radius: 16px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+          <div style="width:42px; height:42px; border-radius:12px; background:rgba(16,185,129,0.12); border:1px solid var(--green); display:flex; align-items:center; justify-content:center; color:var(--green); font-size:20px;">
+            <i class="fa-solid fa-gift"></i>
+          </div>
+          <div>
+            <div style="font-size:15px; font-weight:800; color:var(--text);" id="lbl-prof-refer-earn">Invite Friends & Earn Commission</div>
+            <div style="font-size:11px; color:var(--muted); line-height:1.4;" id="lbl-prof-refer-desc">Get a 10 Br cash bonus for every friend who joins Juba Bingo and plays using your referral link.</div>
+          </div>
+        </div>
+        
+        <!-- Invite URL display box -->
+        <div style="display: flex; align-items: center; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px 14px; gap: 10px; margin-top: 5px;">
+          <i class="fa-solid fa-link" style="color: var(--muted); font-size: 13px;"></i>
+          <span id="p-referral-link-display" style="font-size: 11px; color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; opacity: 0.85;">https://t.me/JubaBingoBot?start=...</span>
+        </div>
+
+        <button onclick="copyReferralLink()" class="btn btn-primary btn-breath" id="p-copy-referral-btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); margin-top: 5px; transition: all 0.2s;">
+          <i class="fa-regular fa-copy"></i> <span id="lbl-prof-copy-referral-btn-text">Copy Referral Link</span>
+        </button>
       </div>
 
       <!-- Advanced Settings Section -->
@@ -1337,7 +1393,7 @@ var COL_TEXT   = {B:'#fff',I:'#fff',N:'#fff',G:'#000',O:'#000'};
 var AM_NUMBERS = {1:'አንድ',2:'ሁለት',3:'ሶስት',4:'አራት',5:'አምስት',6:'ስድስት',7:'ሰባት',8:'ስምንት',9:'ዘጠኝ',10:'አስር',11:'አስራ አንድ',12:'አስራ ሁለት',13:'አስራ ሶስት',14:'አስራ አራት',15:'አስራ አምስት',16:'አስራ ስድስት',17:'አስራ ሰባት',18:'አስራ ስምንት',19:'አስራ ዘጠኝ',20:'ሃያ',21:'ሃያ አንድ',22:'ሃያ ሁለት',23:'ሃያ ሶስት',24:'ሃያ አራት',25:'ሃያ አምስት',26:'ሃያ ስድስት',27:'ሃያ ሰባት',28:'ሃያ ስምንት',29:'ሃያ ዘጠኝ',30:'ሰላሳ',31:'ሰላሳ አንድ',32:'ሰላሳ ሁለት',33:'ሰላሳ ሶስት',34:'ሰላሳ አራት',35:'ሰላሳ አምስት',36:'ሰላሳ ስድስት',37:'ሰላሳ ሰባት',38:'ሰላሳ ስምንት',39:'ሰላሳ ዘጠኝ',40:'አርባ',41:'አርባ አንድ',42:'አርባ ሁለት',43:'አርባ ሶስት',44:'አርባ አራት',45:'አርባ አምስት',46:'አርባ ስድስት',47:'አርባ ሰባት',48:'አርባ ስምንት',49:'አርባ ዘጠኝ',50:'ሃምሳ',51:'ሃምሳ አንድ',52:'ሃምሳ ሁለት',53:'ሃምሳ ሶስት',54:'ሃምሳ አራት',55:'ሃምሳ አምስት',56:'ሃምሳ ስድስት',57:'ሃምሳ ሰባት',58:'ሃምሳ ስምንት',59:'ሃምሳ ዘጠኝ',60:'ስልሳ',61:'ስልሳ አንድ',62:'ስልሳ ሁለት',63:'ስልሳ ሶስት',64:'ስልሳ አራት',65:'ስልሳ አምስት',66:'ስልሳ ስድስት',67:'ስልሳ ሰባት',68:'ስልሳ ስምንት',69:'ስልሳ ዘጠኝ',70:'ሰባ',71:'ሰባ አንድ',72:'ሰባ ሁለት',73:'ሰባ ሶስት',74:'ሰባ አራት',75:'ሰባ አምስት'};
 
 var tgUser=null,tgUserId=null,userMainBalance=0,userPlayBalance=0,apiAvailable=false;
-var selCards=new Set(),timeLeft=35,timerIv=null,round=1,currentGameId=null;
+var selCards=new Set(),timeLeft=35,timerIv=null,round=1,currentGameId=null,hasBoughtTicket=false,serverGameStatus='waiting';
 var soundOn=localStorage.getItem('soundOn') !== 'false',currentPeriod='week',currentCategory='deposit';
 var notificationsEnabled=localStorage.getItem('notificationsEnabled') !== 'false';
 var maxWinners=1,winnersThisRound=[],myWinReported=false;
@@ -1421,6 +1477,10 @@ var APP_TRANSLATIONS = {
     "lbl-prof-invited": "Users Invited",
     "lbl-prof-cur-streak": '<i class="fa-solid fa-fire" style="color:var(--orange); margin-right:4px;"></i>Current Streak',
     "lbl-prof-max-streak": '<i class="fa-solid fa-trophy" style="color:var(--yellow); margin-right:4px;"></i>Highest Streak',
+    "lbl-prof-referral-title": '<i class="fa-solid fa-user-plus" style="color:var(--green); margin-right:6px;"></i>Referral Program',
+    "lbl-prof-refer-earn": "Invite Friends & Earn Commission",
+    "lbl-prof-refer-desc": "Get a 10 Br cash bonus for every friend who joins Juba Bingo and plays using your referral link.",
+    "lbl-prof-copy-referral-btn-text": "Copy Referral Link",
     "lbl-prof-settings-title": '<i class="fa-solid fa-sliders" style="color:var(--orange); margin-right:6px;"></i>Game Settings & Account',
     "lbl-prof-sound": "In-game Sound Effects",
     "lbl-prof-sound-desc": "Mute or unmute game voice calls and blips",
@@ -1534,6 +1594,10 @@ var APP_TRANSLATIONS = {
     "lbl-prof-invited": "የጋበዟቸው ሰዎች",
     "lbl-prof-cur-streak": '<i class="fa-solid fa-fire" style="color:var(--orange); margin-right:4px;"></i>የአሁኑ ተከታታይ ድል',
     "lbl-prof-max-streak": '<i class="fa-solid fa-trophy" style="color:var(--yellow); margin-right:4px;"></i>ከፍተኛ ተከታታይ ድል',
+    "lbl-prof-referral-title": '<i class="fa-solid fa-user-plus" style="color:var(--green); margin-right:6px;"></i>ሪፈራል ፕሮግራም',
+    "lbl-prof-refer-earn": "ጓደኛ ይጋብዙና ኮሚሽን ያግኙ",
+    "lbl-prof-refer-desc": "እርስዎ በጋበዙት ሊንክ ተመዝግበው ለሚጫወቱ ለእያንዳንዱ ጓደኛ የ 10 ብር የቦነስ ሽልማት ያግኙ።",
+    "lbl-prof-copy-referral-btn-text": "የሪፈራል ሊንክ ኮፒ ያድርጉ",
     "lbl-prof-settings-title": '<i class="fa-solid fa-sliders" style="color:var(--orange); margin-right:6px;"></i>የመተግበሪያ ቅንብሮች',
     "lbl-prof-sound": "የጨዋታ ድምጾች",
     "lbl-prof-sound-desc": "የድምጽ ጥሪዎችን እና ድምጾችን ማብራት/ማጥፋት",
@@ -2122,6 +2186,7 @@ async function doRegister() {
 }
 
 function doLogout() {
+  stopInactivityCheck();
   fAuth.signOut().then(function() {
     tgUserId = null;
     tgUser = null;
@@ -2159,6 +2224,44 @@ function fallbackCopyText(text) {
     alert('User ID copied to clipboard! የኮፒ መለያ ቁጥር ተይዟል።');
   } catch (err) {
     alert('Could not copy User ID. Please copy manually: ' + text);
+  }
+  document.body.removeChild(textArea);
+}
+
+function copyReferralLink() {
+  if (soundOn) sfx.playClick();
+  if (!tgUserId) {
+    if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Please login first to copy your referral link. እባክዎ መጀመሪያ ይግቡ።');
+    else alert('⚠️ Please login first to copy your referral link. እባክዎ መጀመሪያ ይግቡ።');
+    return;
+  }
+  var link = 'https://t.me/JubaBingoBot?start=' + tgUserId;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(function() {
+      showToast('Referral link copied! Share with friends to earn commission. 🎉\nየሪፈራል ሊንኩ ኮፒ ተደርጓል! ኮሚሽን ለማግኘት ለጓደኞችዎ ያጋሩ! 🎉');
+    }).catch(function() {
+      fallbackCopyReferralLink(link);
+      showToast('Referral link copied! Share with friends to earn commission. 🎉\nየሪፈራል ሊንኩ ኮፒ ተደርጓል! ኮሚሽን ለማግኘት ለጓደኞችዎ ያጋሩ! 🎉');
+    });
+  } else {
+    fallbackCopyReferralLink(link);
+    showToast('Referral link copied! Share with friends to earn commission. 🎉\nየሪፈራል ሊንኩ ኮፒ ተደርጓል! ኮሚሽን ለማግኘት ለጓደኞችዎ ያጋሩ! 🎉');
+  }
+}
+
+function fallbackCopyReferralLink(text) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+  } catch (err) {
+    console.error('Fallback copy failed', err);
   }
   document.body.removeChild(textArea);
 }
@@ -2351,7 +2454,245 @@ function showVipBenefits() {
 
 async function updateUserName(firstName){if(!tgUserId||!firstName||!apiAvailable)return;try{await fetch(API_BASE+'/api/update_name',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:tgUserId,first_name:firstName,username:tgUser?tgUser.username:''})});}catch(e){}}
 
-function initSocket(){try{socket=io(API_BASE,{transports:['websocket','polling'],reconnection:true,reconnectionDelay:1000,reconnectionAttempts:10,timeout:5000});socket.on('connect',function(){socket.emit('join_room', {room: currentRoom});});socket.on('disconnect',function(){serverDrivingBalls=false;if(game.cards.length>0&&!game.autoIv&&!gamePaused&&!getReadyActive)startAutoGame();});socket.on('max_winners_updated',function(data){if(data.room && data.room !== currentRoom) return; maxWinners=data.max||1;});socket.on('game_paused',function(data){if(data.room && data.room !== currentRoom) return; gamePaused=data.paused;var overlay=document.getElementById('paused-overlay');if(gamePaused){overlay.classList.add('show');stopAutoGame();}else{overlay.classList.remove('show');if(game.cards.length>0&&!game.autoIv&&!gamePaused&&!getReadyActive)startAutoGame();}});socket.on('game_cancelled',function(data){if(data.room && data.room !== currentRoom) return; stopAutoGame();stopWaitDraw();gamePaused=false;getReadyActive=false;document.getElementById('paused-overlay').classList.remove('show');document.getElementById('cancelled-overlay').classList.add('show');});socket.on('countdown_update',function(data){if(data.room && data.room !== currentRoom) return; if(game.cards.length>0)return; currentGameId=data.game_id;setTxt('game-id-label',data.game_id);timeLeft=data.time_left;showSelectScreen();if(!timerIv)startTimer();});socket.on('player_joined',function(data){if(data.room && data.room !== currentRoom) return; game.totalPlayers=data.total_players;updatePlayersDisplay();});socket.on('game_state_update',function(data){if(data.room && data.room !== currentRoom) return; if(data.total_players){game.totalPlayers=data.total_players;updatePlayersDisplay();}});socket.on('ball_called',function(data){if(data.room && data.room !== currentRoom) return; var n=data.number;if(!n)return;markServerDriving();if(getReadyActive){pendingServerBalls.push(n);return;}processBall(n);});socket.on('game_started',function(data){if(data.room && data.room !== currentRoom) return; if(game.cards.length > 0 && data.game_id === game.gameId) {if(data.total_players) {game.totalPlayers = data.total_players;updatePlayersDisplay();}return;}currentGameId=data.game_id;if(data.total_players){game.totalPlayers=data.total_players;updatePlayersDisplay();}stopAutoGame();stopWaitDraw();gamePaused=false;game.called=new Set();game.current=null;game.recentBalls=[];game.callCount=0;waitGame.called=new Set();waitGame.current=null;waitGame.recentBalls=[];waitGame.callCount=0;setTxt('s-call', '0');setTxt('w-call-top', '0');var rbEl=document.getElementById('recent-balls');if(rbEl)rbEl.innerHTML='';var wrbEl=document.getElementById('wait-recent-balls');if(wrbEl)wrbEl.innerHTML='';winnersThisRound=[];myWinReported=false;if(game.cards.length>0){showScreen('screen-game');updatePlayersDisplay();renderNumGrid();renderRecentBalls();renderCurrentBall();renderAllCards();if(!getReadyActive) startAutoGame();}else{showScreen('screen-home');showWaitScreen();}});socket.on('winner_found',function(data){if(data.room && data.room !== currentRoom) return; if(game.cards.length===0)showObserverWinner(data);});socket.on('game_ended',function(data){if(data.room && data.room !== currentRoom) return; stopAutoGame();stopWaitDraw();if(game.cards.length===0)showObserverWinner(data);});}catch(e){}}
+function initSocket(){
+  try {
+    socket = io(API_BASE, {
+      transports: ['websocket','polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 10,
+      timeout: 5000
+    });
+    
+    socket.on('connect', function(){
+      socket.emit('join_room', {room: currentRoom});
+    });
+    
+    socket.on('disconnect', function(){
+      serverDrivingBalls = false;
+    });
+    
+    socket.on('max_winners_updated', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      maxWinners = data.max || 1;
+    });
+    
+    socket.on('game_paused', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      gamePaused = data.paused;
+      var overlay = document.getElementById('paused-overlay');
+      if(gamePaused){
+        overlay.classList.add('show');
+      }else{
+        overlay.classList.remove('show');
+      }
+    });
+    
+    socket.on('game_cancelled', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      stopAutoGame();
+      stopWaitDraw();
+      gamePaused = false;
+      getReadyActive = false;
+      document.getElementById('paused-overlay').classList.remove('show');
+      document.getElementById('cancelled-overlay').classList.add('show');
+    });
+    
+    socket.on('countdown_update', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      
+      currentGameId = data.game_id;
+      setTxt('game-id-label', data.game_id);
+      timeLeft = data.time_left;
+      serverGameStatus = data.status || 'waiting';
+      
+      // Manage overlay views dynamically based on game status
+      var runOverlay = document.getElementById('running-overlay');
+      var bOverlay = document.getElementById('bought-overlay');
+      var buyBtn = document.getElementById('buy-ticket-btn');
+      
+      if (serverGameStatus === 'running' || serverGameStatus === 'celebrating') {
+        if (runOverlay) runOverlay.style.display = 'flex';
+        if (bOverlay) bOverlay.style.display = 'none';
+        if (buyBtn) buyBtn.style.display = 'none';
+      } else {
+        if (runOverlay) runOverlay.style.display = 'none';
+        
+        if (hasBoughtTicket) {
+          if (bOverlay) bOverlay.style.display = 'flex';
+          if (buyBtn) buyBtn.style.display = 'none';
+          var bcEl = document.getElementById('bought-countdown-text');
+          if (bcEl) bcEl.textContent = 'Game starts in ' + timeLeft + 's...';
+        } else {
+          if (bOverlay) bOverlay.style.display = 'none';
+          if (buyBtn) {
+            if (selCards.size >= 1) buyBtn.style.display = 'flex';
+            else buyBtn.style.display = 'none';
+          }
+        }
+      }
+      
+      showSelectScreen();
+      if(!timerIv) startTimer();
+    });
+    
+    socket.on('round_reset', function(data) {
+      if (data.room && data.room !== currentRoom) return;
+      newRound();
+    });
+    
+    socket.on('player_joined', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      game.totalPlayers = data.total_players;
+      updatePlayersDisplay();
+    });
+    
+    socket.on('game_state_update', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      if(data.total_players){
+        game.totalPlayers = data.total_players;
+        updatePlayersDisplay();
+      }
+    });
+    
+    socket.on('ball_called', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      var n = data.number;
+      if(!n) return;
+      markServerDriving();
+      if(getReadyActive){
+        pendingServerBalls.push(n);
+        return;
+      }
+      processBall(n);
+    });
+    
+    socket.on('game_started', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      
+      serverGameStatus = 'running';
+      currentGameId = data.game_id;
+      
+      // Hide running and bought overlays
+      var runOverlay = document.getElementById('running-overlay');
+      if (runOverlay) runOverlay.style.display = 'none';
+      var bOverlay = document.getElementById('bought-overlay');
+      if (bOverlay) bOverlay.style.display = 'none';
+      
+      if(data.total_players){
+        game.totalPlayers = data.total_players;
+        updatePlayersDisplay();
+      }
+      
+      stopAutoGame();
+      stopWaitDraw();
+      gamePaused = false;
+      game.called = new Set();
+      game.current = null;
+      game.recentBalls = [];
+      game.callCount = 0;
+      
+      waitGame.called = new Set();
+      waitGame.current = null;
+      waitGame.recentBalls = [];
+      waitGame.callCount = 0;
+      
+      setTxt('s-call', '0');
+      setTxt('w-call-top', '0');
+      
+      var rbEl = document.getElementById('recent-balls');
+      if(rbEl) rbEl.innerHTML = '';
+      var wrbEl = document.getElementById('wait-recent-balls');
+      if(wrbEl) wrbEl.innerHTML = '';
+      
+      winnersThisRound = [];
+      myWinReported = false;
+      
+      if(game.cards.length > 0){
+        showScreen('screen-game');
+        updatePlayersDisplay();
+        renderNumGrid();
+        renderRecentBalls();
+        renderCurrentBall();
+        renderAllCards();
+        
+        // Setup visual "GET READY" animated countdown
+        getReadyActive = true;
+        pendingServerBalls = [];
+        var currentBig = document.getElementById('current-big');
+        if (currentBig) {
+          currentBig.style.background = 'var(--yellow)';
+          currentBig.style.color = '#000';
+          currentBig.style.boxShadow = '0 0 20px var(--yellow)';
+        }
+        var cbnEl = document.getElementById('cb-num');
+        if (cbnEl) {
+          cbnEl.style.fontSize = '12px';
+          cbnEl.style.lineHeight = '1.2';
+          
+          var getReadyCountdown = 5;
+          cbnEl.innerHTML = 'GET<br>READY<br>(' + getReadyCountdown + ')';
+          setTxt('cb-letter', '');
+          
+          var getReadyInterval = setInterval(function() {
+            getReadyCountdown--;
+            if (getReadyCountdown > 0) {
+              cbnEl.innerHTML = 'GET<br>READY<br>(' + getReadyCountdown + ')';
+            } else {
+              clearInterval(getReadyInterval);
+            }
+          }, 1000);
+          
+          setTimeout(function(){
+            clearInterval(getReadyInterval);
+            getReadyActive = false;
+            while(pendingServerBalls.length > 0){
+              processBall(pendingServerBalls.shift());
+            }
+            markServerDriving();
+          }, 5000);
+        }
+      } else {
+        showScreen('screen-home');
+        showWaitScreen();
+      }
+    });
+    
+    socket.on('winner_found', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      if(game.cards.length === 0) showObserverWinner(data);
+    });
+    
+    socket.on('game_ended', function(data){
+      if(data.room && data.room !== currentRoom) return; 
+      serverGameStatus = 'celebrating';
+      stopAutoGame();
+      stopWaitDraw();
+      
+      // Update running overlay text for anyone not playing
+      var runOverlay = document.getElementById('running-overlay');
+      if (runOverlay) {
+        runOverlay.style.display = 'flex';
+        var heading = runOverlay.querySelector('h2');
+        if (heading) heading.textContent = 'WINNER CELEBRATING!';
+        var desc = runOverlay.querySelector('p');
+        if (desc) desc.innerHTML = 'Please wait... Next round starts soon!<br><span style="color:var(--orange); font-size:12px; font-weight:600; margin-top:5px; display:inline-block;">አሸናፊው እየጨፈረ ነው። ቀጣዩ ዙር በቅርቡ ይጀምራል!</span>';
+      }
+      
+      if(game.cards.length === 0) {
+        showObserverWinner(data);
+      } else {
+        var iAmWinner = data.winners.some(function(w){ return w.userId === tgUserId; });
+        if (iAmWinner) {
+          finalizeWinner(); 
+        } else {
+          showObserverWinner(data);
+        }
+      }
+    });
+    
+  } catch(e) {}
+}
 function markServerDriving(){serverDrivingBalls=true;clearTimeout(serverDrivingTimer);serverDrivingTimer=setTimeout(function(){serverDrivingBalls=false;if(game.cards.length>0&&!game.autoIv&&!gamePaused&&!getReadyActive)startAutoGame();},12000);}
 
 var apiHeaders={'Content-Type':'application/json'};
@@ -2428,6 +2769,13 @@ async function loadProfile(){
   var logoutItem = document.getElementById('logout-setting-item');
   if (logoutItem) {
     logoutItem.style.display = isTelegramMiniApp ? 'none' : 'flex';
+  }
+
+  // Update referral link display
+  var referLink = 'https://t.me/JubaBingoBot?start=' + (tgUserId || '');
+  var referLinkEl = document.getElementById('p-referral-link-display');
+  if (referLinkEl) {
+    referLinkEl.textContent = tgUserId ? referLink : 'Log in to view referral link';
   }
 
   var stats=await fetchProfileStats();
@@ -2528,102 +2876,274 @@ async function checkGameState(){
   }
 }
 
-function showWaitScreen(){document.getElementById('select-area').style.display='none';document.getElementById('wait-area').style.display='flex';document.getElementById('home-topbar').style.display='none';startWaitDraw();}
-function showSelectScreen(){document.getElementById('select-area').style.display='';document.getElementById('wait-area').style.display='none';document.getElementById('home-topbar').style.display='flex';stopWaitDraw();}
 
-function startWaitDraw(){
+function showWaitScreen() {
+  var selectArea = document.getElementById('select-area');
+  var waitArea = document.getElementById('wait-area');
+  var homeTopbar = document.getElementById('home-topbar');
+  if (selectArea) selectArea.style.display = 'none';
+  if (waitArea) waitArea.style.display = 'flex';
+  if (homeTopbar) homeTopbar.style.display = 'none';
+  startWaitDraw();
+}
+
+function showSelectScreen() {
+  var selectArea = document.getElementById('select-area');
+  var waitArea = document.getElementById('wait-area');
+  var homeTopbar = document.getElementById('home-topbar');
+  if (selectArea) selectArea.style.display = '';
+  if (waitArea) waitArea.style.display = 'none';
+  if (homeTopbar) homeTopbar.style.display = 'flex';
+  stopWaitDraw();
+}
+
+function startWaitDraw() {
   stopWaitDraw();
   if (serverDrivingBalls) return;
-  waitGame.called=new Set();
-  waitGame.current=null;
-  waitGame.recentBalls=[];
-  waitGame.callCount=0;
+  waitGame.called = new Set();
+  waitGame.current = null;
+  waitGame.recentBalls = [];
+  waitGame.callCount = 0;
   renderWaitGrid();
-  waitGame.autoIv=setInterval(function(){
+  waitGame.autoIv = setInterval(function() {
     if (serverDrivingBalls) {
       stopWaitDraw();
       return;
     }
-    if(waitGame.called.size>=75){
+    if (waitGame.called.size >= 75) {
       stopWaitDraw();
       return;
     }
-    var pool=[];
-    for(var i=1;i<=75;i++)if(!waitGame.called.has(i))pool.push(i);
-    var n=pool[Math.floor(Math.random()*pool.length)];
+    var pool = [];
+    for (var i = 1; i <= 75; i++) if (!waitGame.called.has(i)) pool.push(i);
+    var n = pool[Math.floor(Math.random() * pool.length)];
     waitGame.called.add(n);
-    waitGame.current=n;
+    waitGame.current = n;
     waitGame.recentBalls.push(n);
-    if(waitGame.recentBalls.length>4)waitGame.recentBalls.shift();
+    if (waitGame.recentBalls.length > 4) waitGame.recentBalls.shift();
     waitGame.callCount++;
     bingoAudio.playNumber(n);
-    setTxt('w-call-top',waitGame.callCount);
+    setTxt('w-call-top', waitGame.callCount);
     renderWaitGrid();
     renderWaitBalls();
     renderWaitCurrent();
-  },2000);
+  }, 2000);
 }
-function stopWaitDraw(){clearInterval(waitGame.autoIv);waitGame.autoIv=null;}
 
-function renderWaitGrid(){var g=document.getElementById('wait-num-grid');if(!g)return;var h='';for(var row=1;row<=15;row++){for(var ci=0;ci<5;ci++){var n=ci*15+row,L=COLS[ci];if(waitGame.current===n){h+='<div class="num-cell current" style="background:#ffd700;color:#000;border-color:#ffd700;box-shadow:0 0 12px #ffd700;">'+n+'</div>';}else if(waitGame.called.has(n)){h+='<div class="num-cell called" style="background:#132f4f;color:#4a9eff;border-color:#1e4976;">'+n+'</div>';}else{h+='<div class="num-cell">'+n+'</div>';}}}g.innerHTML=h;}
-function renderWaitBalls(){var el=document.getElementById('wait-recent-balls');if(!el)return;el.innerHTML=waitGame.recentBalls.slice(-4).map(function(n){var L=letterFor(n);return '<div class="rball" style="background:'+COL_COLORS[L]+';color:'+COL_TEXT[L]+'"><span class="rl">'+L+'</span><span class="rn">'+n+'</span></div>';}).join('');}
-function renderWaitCurrent(){if(!waitGame.current)return;var n=waitGame.current,L=letterFor(n);var el=document.getElementById('wait-current-big');if(!el)return;el.style.background=COL_COLORS[L];el.style.color=COL_TEXT[L];el.style.boxShadow='0 0 16px '+COL_COLORS[L];setTxt('wait-cb-letter',L+'-');setTxt('wait-cb-num',n);el.classList.remove('animate-pop');void el.offsetWidth;el.classList.add('animate-pop');}
+function stopWaitDraw() {
+  clearInterval(waitGame.autoIv);
+  waitGame.autoIv = null;
+}
 
-function buildGrid(){var g=document.getElementById('cards-grid'),h='';for(var i=1;i<=400;i++)h+='<div class="card-cell" id="cc-'+i+'" onclick="toggleCard('+i+')">'+i+'</div>';g.innerHTML=h;}
+function renderWaitGrid() {
+  var g = document.getElementById('wait-num-grid');
+  if (!g) return;
+  var h = '';
+  for (var row = 1; row <= 15; row++) {
+    for (var ci = 0; ci < 5; ci++) {
+      var n = ci * 15 + row;
+      if (waitGame.current === n) {
+        h += '<div class="num-cell current" style="background:#ffd700;color:#000;border-color:#ffd700;box-shadow:0 0 12px #ffd700;">' + n + '</div>';
+      } else if (waitGame.called.has(n)) {
+        h += '<div class="num-cell called" style="background:#132f4f;color:#4a9eff;border-color:#1e4976;">' + n + '</div>';
+      } else {
+        h += '<div class="num-cell">' + n + '</div>';
+      }
+    }
+  }
+  g.innerHTML = h;
+}
 
-var cardDeductMap={};
+function renderWaitBalls() {
+  var el = document.getElementById('wait-recent-balls');
+  if (!el) return;
+  el.innerHTML = waitGame.recentBalls.slice(-4).map(function(n) {
+    var L = letterFor(n);
+    return '<div class="rball" style="background:' + COL_COLORS[L] + ';color:' + COL_TEXT[L] + '"><span class="rl">' + L + '</span><span class="rn">' + n + '</span></div>';
+  }).join('');
+}
 
-function toggleCard(n){
-  if(soundOn) sfx.playBlip();
-  if(selCards.has(n)){
+function renderWaitCurrent() {
+  if (!waitGame.current) return;
+  var n = waitGame.current;
+  var L = letterFor(n);
+  var el = document.getElementById('wait-current-big');
+  if (!el) return;
+  el.style.background = COL_COLORS[L];
+  el.style.color = COL_TEXT[L];
+  el.style.boxShadow = '0 0 16px ' + COL_COLORS[L];
+  setTxt('wait-cb-letter', L + '-');
+  setTxt('wait-cb-num', n);
+  el.classList.remove('animate-pop');
+  void el.offsetWidth;
+  el.classList.add('animate-pop');
+}
+
+function buildGrid() {
+  var g = document.getElementById('cards-grid');
+  if (!g) return;
+  var h = '';
+  for (var i = 1; i <= 400; i++) {
+    h += '<div class="card-cell" id="cc-' + i + '" onclick="toggleCard(' + i + ')">' + i + '</div>';
+  }
+  g.innerHTML = h;
+}
+
+var cardDeductMap = {};
+
+function toggleCard(n) {
+  if (soundOn) sfx.playBlip();
+  if (selCards.has(n)) {
     selCards.delete(n);
-    document.getElementById('cc-'+n).classList.remove('selected');
-    var d=cardDeductMap[n]||{fromPlay:currentStake,fromMain:0};
-    userPlayBalance+=d.fromPlay;
-    userMainBalance+=d.fromMain;
+    var el = document.getElementById('cc-' + n);
+    if (el) el.classList.remove('selected');
+    var d = cardDeductMap[n] || {fromPlay: currentStake, fromMain: 0};
+    userPlayBalance += d.fromPlay;
+    userMainBalance += d.fromMain;
     delete cardDeductMap[n];
     updateBalanceDisplay();
   } else {
-    if(selCards.size>=2) return;
-    var totalAvail=userPlayBalance+userMainBalance;
-    if(totalAvail<currentStake){
-      if(apiAvailable) Telegram.WebApp.showAlert('⚠️ Insufficient balance! በቂ ሂሳብ የለም!');
+    if (selCards.size >= 2) return;
+    var totalAvail = userPlayBalance + userMainBalance;
+    if (totalAvail < currentStake) {
+      if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Insufficient balance! በቂ ሂሳብ የለም!');
       else alert('⚠️ Insufficient balance! በቂ ሂሳብ የለም!');
       return;
     }
-    if(selCards.size===1&&totalAvail<(currentStake*2)){
-      if(apiAvailable) Telegram.WebApp.showAlert('⚠️ Insufficient balance for 2 cards!');
+    if (selCards.size === 1 && totalAvail < (currentStake * 2)) {
+      if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Insufficient balance for 2 cards!');
       else alert('⚠️ Insufficient balance for 2 cards!');
       return;
     }
     selCards.add(n);
-    document.getElementById('cc-'+n).classList.add('selected');
-    var fromPlay=0,fromMain=0;
-    if(userPlayBalance>=currentStake){
-      fromPlay=currentStake;
-      fromMain=0;
-      userPlayBalance-=currentStake;
-    }else{
-      fromPlay=userPlayBalance;
-      fromMain=currentStake-userPlayBalance;
-      userPlayBalance=0;
-      userMainBalance-=fromMain;
+    var el = document.getElementById('cc-' + n);
+    if (el) el.classList.add('selected');
+    var fromPlay = 0, fromMain = 0;
+    if (userPlayBalance >= currentStake) {
+      fromPlay = currentStake;
+      fromMain = 0;
+      userPlayBalance -= currentStake;
+    } else {
+      fromPlay = userPlayBalance;
+      fromMain = currentStake - userPlayBalance;
+      userPlayBalance = 0;
+      userMainBalance -= fromMain;
     }
-    cardDeductMap[n]={fromPlay:fromPlay,fromMain:fromMain};
+    cardDeductMap[n] = {fromPlay: fromPlay, fromMain: fromMain};
     updateBalanceDisplay();
   }
-  if(selCards.size>=2){
-    for(var i=1;i<=400;i++) if(!selCards.has(i)) document.getElementById('cc-'+i).classList.add('disabled');
-  }else{
-    for(var i=1;i<=400;i++) document.getElementById('cc-'+i).classList.remove('disabled');
-    selCards.forEach(function(s){document.getElementById('cc-'+s).classList.add('selected');});
+  
+  if (selCards.size >= 2) {
+    for (var i = 1; i <= 400; i++) {
+      if (!selCards.has(i)) {
+        var el = document.getElementById('cc-' + i);
+        if (el) el.classList.add('disabled');
+      }
+    }
+  } else {
+    for (var i = 1; i <= 400; i++) {
+      var el = document.getElementById('cc-' + i);
+      if (el) el.classList.remove('disabled');
+    }
+    selCards.forEach(function(s) {
+      var el = document.getElementById('cc-' + s);
+      if (el) el.classList.add('selected');
+    });
   }
-  setTxt('sel-count',selCards.size);
-  var winAmt=Math.round(selCards.size*currentStake*0.8);
-  setTxt('s-win-sel',winAmt);
-  setTxt('s-win-game',winAmt);
-  game.totalPlayers=selCards.size;
+  
+  setTxt('sel-count', selCards.size);
+  var winAmt = Math.round(selCards.size * currentStake * 0.8);
+  setTxt('s-win-sel', winAmt);
+  setTxt('s-win-game', winAmt);
+  game.totalPlayers = selCards.size;
   updatePlayersDisplay();
+
+  var buyBtn = document.getElementById('buy-ticket-btn');
+  if (buyBtn) {
+    if (selCards.size >= 1 && !hasBoughtTicket && serverGameStatus === 'waiting') {
+      buyBtn.style.display = 'flex';
+    } else {
+      buyBtn.style.display = 'none';
+    }
+  }
+}
+
+async function buyTicket() {
+  if (soundOn) sfx.playClick();
+  var cardNums = Array.from(selCards);
+  if (cardNums.length < 1) {
+    if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Please select at least 1 card! (እባክዎ ቢያንስ 1 ካርቴላ ይምረጡ!)');
+    else alert('⚠️ Please select at least 1 card! (እባክዎ ቢያንስ 1 ካርቴላ ይምረጡ!)');
+    return;
+  }
+  
+  var buyBtn = document.getElementById('buy-ticket-btn');
+  if (buyBtn) buyBtn.style.display = 'none';
+  
+  var betAmount = cardNums.length * currentStake;
+  var deducted = await deductBet(betAmount);
+  if (!deducted) {
+    if (buyBtn) buyBtn.style.display = 'flex';
+    return;
+  }
+  
+  game.cardNums = cardNums;
+  game.gameId = currentGameId;
+  
+  game.cards = cardNums.map(function(num){
+    return generateCardDeterministic(num);
+  });
+  
+  game.marked = game.cards.map(function(){
+    return new Set([12]);
+  });
+  game.wonLines = game.cards.map(function(){
+    return new Set();
+  });
+  
+  game.called = new Set();
+  game.current = null;
+  game.recentBalls = [];
+  game.callCount = 0;
+  setTxt('s-call', '0');
+  game.winAmount = Math.round(betAmount * 0.8);
+  game.totalPlayers = cardNums.length;
+  game.betDeducted = true;
+  winnersThisRound = [];
+  myWinReported = false;
+  
+  await recordGamePlayed(game.gameId, cardNums, currentStake);
+  updatePlayersDisplay();
+  
+  setTxt('card1-id', cardNums[0]);
+  setTxt('s-game-id', game.gameId);
+  renderCardHeader('card1-header');
+  if (cardNums.length >= 2) {
+    setTxt('card2-id', cardNums[1]);
+    renderCardHeader('card2-header');
+    document.getElementById('card2-box').style.display = 'block';
+    document.getElementById('no-card-slot').style.display = 'none';
+  } else {
+    document.getElementById('card2-box').style.display = 'none';
+    document.getElementById('no-card-slot').style.display = 'flex';
+  }
+  
+  if (socket && socket.connected) {
+    socket.emit('player_ready', {
+      user_id: tgUserId,
+      name: tgUser ? tgUser.first_name || 'Player' : 'Player',
+      cards: cardNums,
+      game_id: currentGameId,
+      room: currentRoom,
+      stake: currentStake
+    });
+  }
+  
+  hasBoughtTicket = true;
+  var bGameIdEl = document.getElementById('bought-game-id');
+  if (bGameIdEl) bGameIdEl.textContent = currentGameId || '—';
+  var bOverlay = document.getElementById('bought-overlay');
+  if (bOverlay) bOverlay.style.display = 'flex';
 }
 
 function startTimer(){
@@ -2636,6 +3156,11 @@ function startTimer(){
     el.textContent=timeLeft+'s';
     el.style.color=timeLeft<=10?'var(--orange)':'var(--yellow)';
     
+    var bcEl = document.getElementById('bought-countdown-text');
+    if (bcEl && hasBoughtTicket) {
+      bcEl.textContent = 'Game starts in ' + timeLeft + 's...';
+    }
+    
     if(soundOn && timeLeft<=5 && timeLeft>0){
       sfx.playCountdown();
     }
@@ -2644,14 +3169,12 @@ function startTimer(){
       sendBrowserNotification('JUBA BINGO ⏳', 'Your joined game is starting in 3 seconds! Get ready!');
     }
     
-    if(timeLeft===1 && selCards.size>=1){
+    if(timeLeft<=0){
       clearInterval(timerIv);
       timerIv=null;
-      startGame();
-    }else if(timeLeft<=0){
-      clearInterval(timerIv);
-      timerIv=null;
-      startGame();
+      if (selCards.size >= 1 && !hasBoughtTicket) {
+        buyTicket();
+      }
     }
   },1000);
 }
@@ -3124,6 +3647,22 @@ function newRound(){
   pendingServerBalls=[];
   document.getElementById('paused-overlay').classList.remove('show');
   document.getElementById('cancelled-overlay').classList.remove('show');
+
+  hasBoughtTicket = false;
+  serverGameStatus = 'waiting';
+  var runOverlay = document.getElementById('running-overlay');
+  if (runOverlay) {
+    runOverlay.style.display = 'none';
+    var heading = runOverlay.querySelector('h2');
+    if (heading) heading.textContent = 'GAME IN PROGRESS';
+    var desc = runOverlay.querySelector('p');
+    if (desc) desc.innerHTML = 'A synchronized round is currently active. Please wait for the next countdown to buy a ticket.<br><span style="color:var(--orange); font-size:12px; font-weight:600; margin-top:5px; display:inline-block;">ጨዋታው በመካሄድ ላይ ነው። እባክዎ ቀጣዩን ዙር ይጠብቁ።</span>';
+  }
+  var bOverlay = document.getElementById('bought-overlay');
+  if (bOverlay) bOverlay.style.display = 'none';
+  var buyBtn = document.getElementById('buy-ticket-btn');
+  if (buyBtn) buyBtn.style.display = 'none';
+
   selCards=new Set();
   game.betDeducted=false;
   cardDeductMap={};
@@ -3761,8 +4300,71 @@ function stopConfetti() {
   confettiParticles = [];
 }
 
+var lastActivityTime = Date.now();
+var INACTIVITY_LIMIT = 10 * 60 * 1000; // 10 minutes in milliseconds
+var inactivityInterval = null;
+
+function resetInactivityTimer() {
+  lastActivityTime = Date.now();
+}
+
+function startInactivityCheck() {
+  if (inactivityInterval) clearInterval(inactivityInterval);
+  lastActivityTime = Date.now();
+  inactivityInterval = setInterval(function() {
+    if (!tgUserId) return;
+    
+    // Check if user is in an active game session or has bought cards
+    if (isUserInActiveGame()) {
+      resetInactivityTimer();
+      return;
+    }
+    
+    var now = Date.now();
+    if (now - lastActivityTime >= INACTIVITY_LIMIT) {
+      handleAutoLogout();
+    }
+  }, 10000); // Check every 10 seconds
+}
+
+function stopInactivityCheck() {
+  if (inactivityInterval) {
+    clearInterval(inactivityInterval);
+    inactivityInterval = null;
+  }
+}
+
+function isUserInActiveGame() {
+  var gameScreen = document.getElementById('screen-game');
+  var winnerScreen = document.getElementById('screen-winner');
+  var gameScreenActive = gameScreen && gameScreen.classList.contains('active');
+  var winnerScreenActive = winnerScreen && winnerScreen.classList.contains('active');
+  var hasCards = typeof game !== 'undefined' && game.cards && game.cards.length > 0;
+  var bought = typeof hasBoughtTicket !== 'undefined' && hasBoughtTicket;
+  
+  return gameScreenActive || winnerScreenActive || hasCards || bought;
+}
+
+function handleAutoLogout() {
+  stopInactivityCheck();
+  doLogout();
+  
+  var msg = "⚠️ You have been logged out due to inactivity for more than 10 minutes to protect your wallet and game state.\n\n⚠️ የኪስ ቦርሳዎን እና የጨዋታ ሁኔታዎን ለመጠበቅ ከ10 ደቂቃ በላይ እንቅስቃሴ ባለማድረግዎ ከአካውንት ወጥተዋል።";
+  if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.showAlert === 'function') {
+    window.Telegram.WebApp.showAlert(msg);
+  } else {
+    alert(msg);
+  }
+}
+
+// Attach event listeners for user interaction
+['click', 'mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(function(evt) {
+  document.addEventListener(evt, resetInactivityTimer, { passive: true });
+});
+
 function appInit() {
   if (tgUserId) {
+    startInactivityCheck();
     // Authenticated via Telegram or localStorage
     fetchBalance().then(function(data){
       updateUserInfo();
