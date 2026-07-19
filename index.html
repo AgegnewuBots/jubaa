@@ -196,7 +196,17 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 @keyframes bounce{from{transform:translateY(0) scale(1);}to{transform:translateY(-12px) scale(1.05);}}
 .winner-title{font-size:22px;font-weight:900;color:var(--yellow);letter-spacing:3px;margin:5px 0 2px;text-shadow:0 0 20px rgba(245,158,11,0.4);}
 .winners-names-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:6px 0 8px;width:100%;}
-.winner-name-chip{display:flex;align-items:center;gap:5px;background:rgba(255, 214, 0, 0.15);backdrop-filter:blur(8px);border:1px solid rgba(255, 214, 0, 0.4);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--yellow);box-shadow:0 0 15px rgba(255, 214, 0, 0.2);}
+.winner-name-chip{display:flex;align-items:center;gap:5px;background:rgba(255, 214, 0, 0.15);backdrop-filter:blur(8px);border:1px solid rgba(255, 214, 0, 0.4);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--yellow);box-shadow:0 0 15px rgba(255, 214, 0, 0.2);animation:winnerChipEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;}
+@keyframes winnerChipEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 .winner-name-chip .wn-crown{font-size:14px;}
 .winner-name-chip .wn-card{font-size:10px;color:var(--muted);margin-left:2px;}
 .winner-card-box{background:var(--glass-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:2px solid var(--yellow);border-radius:12px;padding:8px;margin:2px 0 8px;width:100%;max-width:240px;box-shadow:0 0 30px rgba(255, 214, 0, 0.25), inset 0 2px 10px rgba(255, 214, 0, 0.1);}
@@ -599,19 +609,52 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 </head>
 <body>
 <div class="app">
-  <div class="screen active" id="screen-auth" style="background: var(--bg); align-items: center; justify-content: center; height: 100vh;">
-    <div style="text-align: center; padding: 20px;">
+  <div class="screen active" id="screen-auth" style="background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <div style="text-align: center; padding: 20px; width: 100%; max-width: 360px;">
       <div class="breath-logo" style="position: relative; display: inline-block; margin-bottom: 25px;">
-        <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; box-shadow: 0 0 30px rgba(255,107,0,0.6);" alt="Juba Bingo Logo">
+        <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; box-shadow: 0 0 30px rgba(255,107,0,0.6);" alt="Juba Bingo Logo">
         <div style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 2px dashed var(--orange); animation: rotate 15s linear infinite; opacity: 0.5;"></div>
       </div>
-      <div style="color: var(--orange); font-size: 32px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 15px rgba(255,107,0,0.4); margin-bottom: 10px;">JUBA BINGO</div>
-      <div style="color: var(--text); font-size: 15px; font-weight: 700; margin-bottom: 25px; opacity: 0.9;">TELEGRAM MINI APP</div>
+      <div style="color: var(--orange); font-size: 32px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 15px rgba(255,107,0,0.4); margin-bottom: 5px;">JUBA BINGO</div>
+      <div style="color: var(--text); font-size: 14px; font-weight: 700; margin-bottom: 25px; opacity: 0.8; letter-spacing: 0.5px;">TELEGRAM MINI APP</div>
       
-      <!-- Premium Spinner -->
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 18px 30px; border-radius: 16px; backdrop-filter: blur(10px);">
+      <!-- Premium Spinner (Default state while checking) -->
+      <div id="auth-spinner-container" style="display: flex; flex-direction: column; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 22px 30px; border-radius: 20px; backdrop-filter: blur(10px); margin-bottom: 15px;">
         <div class="spinner-modern" style="width: 28px; height: 28px; border: 3px solid rgba(255,107,0,0.15); border-top-color: var(--orange); border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
-        <div style="font-size: 13px; color: var(--muted); font-weight: 600;" id="splash-loading-text">Initializing secure game session...<br><span style="font-size: 11px; opacity: 0.7;">ደህንነቱ የተጠበቀ ክፍለ ጊዜ በመጀመር ላይ...</span></div>
+        <div style="font-size: 13px; color: var(--muted); font-weight: 600; line-height: 1.5;" id="splash-loading-text">
+          Verifying secure game session...<br>
+          <span style="font-size: 11px; opacity: 0.7; font-weight: 500;">የጨዋታ ክፍለ ጊዜ በመጀመር ላይ...</span>
+        </div>
+      </div>
+
+      <!-- Copy & Paste Input Box for Web Players -->
+      <div id="web-auth-box" style="display: none; flex-direction: column; gap: 16px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255,255,255,0.08); padding: 24px; border-radius: 24px; backdrop-filter: blur(20px); text-align: left; box-shadow: 0 15px 35px rgba(0,0,0,0.6); animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="text-align: center; margin-bottom: 5px;">
+          <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin: 0 0 4px 0;">Telegram Player Access</h2>
+          <p style="font-size: 11px; color: var(--muted); margin: 0; line-height: 1.4;">Enter or paste your Telegram Account ID & Name to synchronize your profile and load your game wallet instantly.</p>
+        </div>
+        
+        <div class="input-group">
+          <label style="font-size: 10px; font-weight: 800; color: var(--orange); letter-spacing: 0.7px;">TELEGRAM ACCOUNT ID</label>
+          <div class="input-wrap">
+            <input type="text" id="pasted-tg-id" class="auth-input" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;" placeholder="e.g. 5810293847">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label style="font-size: 10px; font-weight: 800; color: var(--orange); letter-spacing: 0.7px;">PLAYER FULL NAME</label>
+          <div class="input-wrap">
+            <input type="text" id="pasted-tg-name" class="auth-input" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;" placeholder="e.g. Abebe Kebede">
+          </div>
+        </div>
+
+        <button class="auth-btn" onclick="submitPastedTelegramId()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, var(--orange) 0%, #e65100 100%); color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(255,107,0,0.3); transition: all 0.2s; margin-top: 5px;">
+          <i class="fa-solid fa-right-to-bracket"></i> ENTER GAME (ግባ)
+        </button>
+
+        <div style="text-align: center; margin-top: 4px;">
+          <button onclick="prefillTestTelegramId()" style="background: none; border: none; color: var(--blue); font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: underline;">Use Demo/Test Account ID</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1258,69 +1301,96 @@ var fDb = firebase.firestore();
 // Keep a flag to prevent multiple triggerings during state change
 var isFAuthInit = false;
 
-async function autoLoginRegister() {
-  if (!tgUserId) {
-    initTelegram();
-  }
-  if (!tgUserId) return;
-  
-  var email = tgUserId + '@juba.bingo';
-  var pass = 'tg_' + tgUserId;
-  var name = tgUser ? (tgUser.first_name || 'Player') : 'Player';
-  
+var tgUser = null;
+var tgUserId = null;
+
+function initTelegram() {
   try {
-    var userCredential = await fAuth.signInWithEmailAndPassword(email, pass);
-    var firebaseUser = userCredential.user;
-    tgUserId = firebaseUser.uid;
-    localStorage.setItem('bingio_user_id', firebaseUser.uid);
-    updateStakeProfile();
-  } catch (err) {
-    if (err.code === 'auth/user-not-found' || err.message.indexOf('user-not-found') !== -1 || err.code === 'auth/invalid-credential' || err.message.indexOf('invalid-credential') !== -1) {
-      try {
-        var userCredential = await fAuth.createUserWithEmailAndPassword(email, pass);
-        var firebaseUser = userCredential.user;
-        await firebaseUser.updateProfile({ displayName: name });
-        
-        try {
-          await fetch(API_BASE + '/api/auth/register', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ name: name, phone: firebaseUser.uid, password: pass })
-          });
-        } catch (apiErr) {
-          console.error('Backend api register error:', apiErr);
-        }
-        
-        tgUserId = firebaseUser.uid;
-        localStorage.setItem('bingio_user_id', firebaseUser.uid);
-        updateStakeProfile();
-      } catch (regErr) {
-        console.error('Auto registration failed:', regErr);
-      }
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+      var wa = window.Telegram.WebApp;
+      wa.ready();
+      wa.expand();
+      tgUser = wa.initDataUnsafe.user;
+      tgUserId = tgUser.id.toString();
+      updateStakeProfile();
     } else {
-      console.error('Auto sign in failed:', err);
+      var savedId = localStorage.getItem('bingio_user_id');
+      if (savedId) {
+        tgUserId = savedId;
+        var savedName = localStorage.getItem('bingio_user_name') || 'Web Player';
+        var savedUsername = localStorage.getItem('bingio_user_username') || savedId;
+        tgUser = { id: savedId, first_name: savedName, username: savedUsername };
+        updateStakeProfile();
+      } else {
+        tgUserId = null;
+        tgUser = null;
+      }
     }
+  } catch (e) {
+    console.error('initTelegram error:', e);
   }
 }
 
-fAuth.onAuthStateChanged(function(firebaseUser) {
-  if (firebaseUser) {
-    tgUserId = firebaseUser.uid;
-    tgUser = {
-      id: firebaseUser.uid,
-      first_name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-      username: firebaseUser.email.split('@')[0]
-    };
-    localStorage.setItem('bingio_user_id', firebaseUser.uid);
-    updateStakeProfile();
-    if (!isFAuthInit) {
-      isFAuthInit = true;
-      appInit();
-    }
-  } else {
-    autoLoginRegister();
+function submitPastedTelegramId() {
+  var idInput = document.getElementById('pasted-tg-id').value.trim();
+  var nameInput = document.getElementById('pasted-tg-name').value.trim();
+  
+  if (!idInput) {
+    alert('Please enter or paste your Telegram ID. እባክዎ የስልክ ወይም አካውንት መለያዎን ያስገቡ።');
+    return;
   }
-});
+  
+  // Clean special characters but keep underscores and alphanumeric
+  idInput = idInput.replace(/[^a-zA-Z0-9_@]/g, '');
+  if (!nameInput) {
+    nameInput = 'Player ' + idInput;
+  }
+  
+  tgUserId = idInput;
+  tgUser = {
+    id: idInput,
+    first_name: nameInput,
+    username: idInput.startsWith('@') ? idInput.substring(1) : idInput
+  };
+  
+  localStorage.setItem('bingio_user_id', tgUserId);
+  localStorage.setItem('bingio_user_name', nameInput);
+  localStorage.setItem('bingio_user_username', tgUser.username);
+  
+  updateStakeProfile();
+  
+  // Quick background sync with backend
+  fetch(API_BASE + '/api/auth/register', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name: nameInput, phone: tgUserId, password: 'tg_' + tgUserId })
+  }).catch(function(){});
+  
+  fetch(API_BASE + '/api/auth/update_name', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ user_id: tgUserId, first_name: nameInput, username: tgUser.username })
+  }).catch(function(){});
+  
+  appInit();
+}
+
+function prefillTestTelegramId() {
+  document.getElementById('pasted-tg-id').value = '3050692752';
+  document.getElementById('pasted-tg-name').value = 'Juba Winner';
+}
+
+function autoLoginRegister() {
+  initTelegram();
+  if (tgUserId) {
+    appInit();
+  } else {
+    var spinContainer = document.getElementById('auth-spinner-container');
+    if (spinContainer) spinContainer.style.display = 'none';
+    var authBox = document.getElementById('web-auth-box');
+    if (authBox) authBox.style.display = 'flex';
+  }
+}
 
 var API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
   ? 'http://localhost:3000'
@@ -1330,7 +1400,7 @@ var COL_COLORS = {B:'#00b0ff',I:'#d500f9',N:'#ff4081',G:'#ffd600',O:'#ff7b00'};
 var COL_TEXT   = {B:'#fff',I:'#fff',N:'#fff',G:'#000',O:'#000'};
 var AM_NUMBERS = {1:'አንድ',2:'ሁለት',3:'ሶስት',4:'አራት',5:'አምስት',6:'ስድስት',7:'ሰባት',8:'ስምንት',9:'ዘጠኝ',10:'አስር',11:'አስራ አንድ',12:'አስራ ሁለት',13:'አስራ ሶስት',14:'አስራ አራት',15:'አስራ አምስት',16:'አስራ ስድስት',17:'አስራ ሰባት',18:'አስራ ስምንት',19:'አስራ ዘጠኝ',20:'ሃያ',21:'ሃያ አንድ',22:'ሃያ ሁለት',23:'ሃያ ሶስት',24:'ሃያ አራት',25:'ሃያ አምስት',26:'ሃያ ስድስት',27:'ሃያ ሰባት',28:'ሃያ ስምንት',29:'ሃያ ዘጠኝ',30:'ሰላሳ',31:'ሰላሳ አንድ',32:'ሰላሳ ሁለት',33:'ሰላሳ ሶስት',34:'ሰላሳ አራት',35:'ሰላሳ አምስት',36:'ሰላሳ ስድስት',37:'ሰላሳ ሰባት',38:'ሰላሳ ስምንት',39:'ሰላሳ ዘጠኝ',40:'አርባ',41:'አርባ አንድ',42:'አርባ ሁለት',43:'አርባ ሶስት',44:'አርባ አራት',45:'አርባ አምስት',46:'አርባ ስድስት',47:'አርባ ሰባት',48:'አርባ ስምንት',49:'አርባ ዘጠኝ',50:'ሃምሳ',51:'ሃምሳ አንድ',52:'ሃምሳ ሁለት',53:'ሃምሳ ሶስት',54:'ሃምሳ አራት',55:'ሃምሳ አምስት',56:'ሃምሳ ስድስት',57:'ሃምሳ ሰባት',58:'ሃምሳ ስምንት',59:'ሃምሳ ዘጠኝ',60:'ስልሳ',61:'ስልሳ አንድ',62:'ስልሳ ሁለት',63:'ስልሳ ሶስት',64:'ስልሳ አራት',65:'ስልሳ አምስት',66:'ስልሳ ስድስት',67:'ስልሳ ሰባት',68:'ስልሳ ስምንት',69:'ስልሳ ዘጠኝ',70:'ሰባ',71:'ሰባ አንድ',72:'ሰባ ሁለት',73:'ሰባ ሶስት',74:'ሰባ አራት',75:'ሰባ አምስት'};
 
-var tgUser=null,tgUserId=null,userMainBalance=0,userPlayBalance=0,hasUserPassword=false,apiAvailable=false;
+var userMainBalance=parseFloat(localStorage.getItem('bingio_main_balance') || '0'),userPlayBalance=parseFloat(localStorage.getItem('bingio_play_balance') || '0'),hasUserPassword=false,apiAvailable=false;
 var selCards=new Set(),timeLeft=35,timerIv=null,round=1,currentGameId=null,hasBoughtTicket=false,serverGameStatus='waiting';
 var soundOn=localStorage.getItem('soundOn') === 'true',currentPeriod='week',currentCategory='games';
 var notificationsEnabled=localStorage.getItem('notificationsEnabled') !== 'false';
@@ -1931,16 +2001,11 @@ function updateStakeProfile() {
   var nameEl = document.getElementById('stake-username');
   var topTitleEl = document.getElementById('stake-top-title');
 
-  var dispId = tgUserId;
-  if (dispId) {
-    dispId = dispId.split('@')[0];
-    if (!dispId.startsWith('@')) dispId = '@' + dispId;
-  } else {
-    dispId = '@';
-  }
+  var nameStr = tgUser ? (tgUser.first_name || 'Player') : 'Player';
+  var idStr = tgUserId ? (tgUserId.startsWith('@') ? tgUserId : '@' + tgUserId) : '@';
 
   if (topTitleEl) {
-    topTitleEl.textContent = dispId;
+    topTitleEl.textContent = nameStr.toUpperCase();
   }
 
   if (imgEl && letterEl && nameEl) {
@@ -1949,46 +2014,18 @@ function updateStakeProfile() {
       imgEl.style.display = 'block';
       letterEl.style.display = 'none';
     } else {
-      var nameStr = tgUser ? (tgUser.first_name || 'Player') : 'Player';
       var initial = nameStr.charAt(0).toUpperCase();
       letterEl.textContent = initial;
       imgEl.style.display = 'none';
       letterEl.style.display = 'flex';
     }
 
-    nameEl.textContent = dispId;
+    nameEl.innerHTML = nameStr + '<span style="display:block; font-size:12px; color:var(--muted); font-weight:500; margin-top:2px;">ID: ' + idStr + '</span>';
     nameEl.style.display = 'block';
   }
 }
 
-function initTelegram() {
-  try {
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-      var wa = window.Telegram.WebApp;
-      wa.ready();
-      wa.expand();
-      tgUser = wa.initDataUnsafe.user;
-      tgUserId = tgUser.id.toString();
-      updateUserName(tgUser.first_name || '');
-      updateStakeProfile();
-    } else {
-      // Fallback to localStorage for web users
-      var savedId = localStorage.getItem('bingio_user_id');
-      if (savedId) {
-        tgUserId = savedId;
-        tgUser = { id: savedId, first_name: 'Web User', username: savedId };
-        updateStakeProfile();
-      } else {
-        // Generate a random 10-digit Telegram ID starting with '3'
-        var randomId = '3' + Math.floor(100000000 + Math.random() * 900000000).toString();
-        tgUserId = randomId;
-        tgUser = { id: randomId, first_name: 'Web User', username: randomId };
-        localStorage.setItem('bingio_user_id', randomId);
-        updateStakeProfile();
-      }
-    }
-  } catch (e) {}
-}
+
 
 function switchAuthTab(tab) {
   document.getElementById('tab-login').classList.remove('active');
@@ -2133,14 +2170,23 @@ async function doRegister() {
 
 function doLogout() {
   stopInactivityCheck();
-  fAuth.signOut().then(function() {
-    tgUserId = null;
-    tgUser = null;
-    localStorage.removeItem('bingio_user_id');
-    showScreen('screen-auth');
-  }).catch(function(err) {
-    console.error('Sign out error:', err);
-  });
+  tgUserId = null;
+  tgUser = null;
+  localStorage.removeItem('bingio_user_id');
+  localStorage.removeItem('bingio_user_name');
+  localStorage.removeItem('bingio_user_username');
+  
+  var idInput = document.getElementById('pasted-tg-id');
+  if (idInput) idInput.value = '';
+  var nameInput = document.getElementById('pasted-tg-name');
+  if (nameInput) nameInput.value = '';
+  
+  var spinContainer = document.getElementById('auth-spinner-container');
+  if (spinContainer) spinContainer.style.display = 'none';
+  var authBox = document.getElementById('web-auth-box');
+  if (authBox) authBox.style.display = 'flex';
+  
+  showScreen('screen-auth');
 }
 
 function copyUserId() {
@@ -2328,8 +2374,12 @@ async function submitClientWithdraw() {
 async function fetchSystemConfig() {
   try {
     var res = await fetch(API_BASE + '/api/config');
+    var contentType = res.headers.get('content-type');
+    if (!res.ok || !contentType || !contentType.includes('application/json')) {
+      return;
+    }
     var data = await res.json();
-    if (data.success) {
+    if (data && data.success) {
       // Handle Maintenance Mode
       if (data.settings && data.settings.maintenance) {
         document.getElementById('maintenance-overlay').style.display = 'flex';
@@ -2338,7 +2388,7 @@ async function fetchSystemConfig() {
       }
     }
   } catch (e) {
-    console.error('Failed to sync settings config:', e);
+    console.warn('System config sync is waiting for server to be fully online...', e.message);
   }
 }
 
@@ -2711,7 +2761,7 @@ async function deductBet(amount){if(!tgUserId||!apiAvailable)return true;try{var
 async function reportWin(amount,gameId){if(!tgUserId||!apiAvailable||myWinReported)return;myWinReported=true;try{var res=await fetch(API_BASE+'/api/win',{method:'POST',headers:apiHeaders,body:JSON.stringify({user_id:tgUserId,amount:amount,game_id:gameId})});var data=await res.json();if(data.success){userMainBalance=data.main_balance;userPlayBalance=data.play_balance;updateBalanceDisplay();}}catch(e){}}
 async function recordGamePlayed(gameId,cardNums,stake){if(!tgUserId||!apiAvailable)return;try{await fetch(API_BASE+'/api/game_played',{method:'POST',headers:apiHeaders,body:JSON.stringify({user_id:tgUserId,game_id:gameId,cards:cardNums,stake:stake,room:currentRoom})});}catch(e){}}
 
-function updateBalanceDisplay(){var mainStr=userMainBalance.toFixed(2);var playStr=userPlayBalance.toFixed(2);var totalStr=(userMainBalance+userPlayBalance).toFixed(2);setTxt('s-main',mainStr);setTxt('s-play',playStr);setTxt('p-main',mainStr);setTxt('p-play',playStr);setTxt('p-total',totalStr);setTxt('tw-main',mainStr);setTxt('tw-play',playStr);setTxt('tw-total',totalStr);setTxt('w-main',mainStr);setTxt('w-play',playStr);setTxt('w-total',totalStr);setTxt('wl-main-sub',mainStr);setTxt('wl-play-sub',playStr);setTxt('wl-total-big',totalStr+' Br');var pBalEl=document.getElementById('p-bal');if(pBalEl)pBalEl.innerHTML='<i class="fa-solid fa-wallet" style="color:var(--green); margin-right:4px;"></i> '+totalStr+' Br';var wlBalEl=document.getElementById('wl-bal');if(wlBalEl)wlBalEl.innerHTML='<i class="fa-solid fa-wallet" style="color:var(--green); margin-right:4px;"></i> '+totalStr+' Br';var noBalMsg=document.getElementById('no-balance-msg');if(apiAvailable&&(userPlayBalance+userMainBalance)<currentStake)noBalMsg.style.display='block';else noBalMsg.style.display='none';}
+function updateBalanceDisplay(){if(typeof userMainBalance === 'number') localStorage.setItem('bingio_main_balance', userMainBalance.toString());if(typeof userPlayBalance === 'number') localStorage.setItem('bingio_play_balance', userPlayBalance.toString());var mainStr=userMainBalance.toFixed(2);var playStr=userPlayBalance.toFixed(2);var totalStr=(userMainBalance+userPlayBalance).toFixed(2);setTxt('s-main',mainStr);setTxt('s-play',playStr);setTxt('p-main',mainStr);setTxt('p-play',playStr);setTxt('p-total',totalStr);setTxt('tw-main',mainStr);setTxt('tw-play',playStr);setTxt('tw-total',totalStr);setTxt('w-main',mainStr);setTxt('w-play',playStr);setTxt('w-total',totalStr);setTxt('wl-main-sub',mainStr);setTxt('wl-play-sub',playStr);setTxt('wl-total-big',totalStr+' Br');var pBalEl=document.getElementById('p-bal');if(pBalEl)pBalEl.innerHTML='<i class="fa-solid fa-wallet" style="color:var(--green); margin-right:4px;"></i> '+totalStr+' Br';var wlBalEl=document.getElementById('wl-bal');if(wlBalEl)wlBalEl.innerHTML='<i class="fa-solid fa-wallet" style="color:var(--green); margin-right:4px;"></i> '+totalStr+' Br';var noBalMsg=document.getElementById('no-balance-msg');if(apiAvailable&&(userPlayBalance+userMainBalance)<currentStake)noBalMsg.style.display='block';else noBalMsg.style.display='none';}
 
 function updateUserInfo(){
   var name = 'Player';
@@ -3473,9 +3523,9 @@ function buildWinnerScreen(totalPrize,prizeEach,winnerCount,realPlayers){
   }
   var namesHtml='';
   if(winnersThisRound.length===0){
-    namesHtml='<div class="winner-name-chip"><span class="wn-crown">👑</span><span>—</span></div>';
+    namesHtml='<div class="winner-name-chip" style="animation-delay: 0s;"><span class="wn-crown">👑</span><span>—</span></div>';
   }else{
-    namesHtml=winnersThisRound.map(function(w){return '<div class="winner-name-chip"><span class="wn-crown">👑</span><span>'+w.name+'</span><span class="wn-card">#'+w.cardNum+'</span></div>';}).join('');
+    namesHtml=winnersThisRound.map(function(w, idx){return '<div class="winner-name-chip" style="animation-delay: ' + (idx * 0.15) + 's;"><span class="wn-crown">👑</span><span>'+w.name+'</span><span class="wn-card">#'+w.cardNum+'</span></div>';}).join('');
   }
   document.getElementById('winners-names-row').innerHTML=namesHtml;
   setTxt('w-prize',totalPrize);
@@ -3527,7 +3577,7 @@ function showObserverWinner(data){
   }else{
     titleEl.textContent='BINGO! WINNER!';
   }
-  var namesHtml=winnersThisRound.map(function(w){return '<div class="winner-name-chip"><span class="wn-crown">👑</span><span>'+w.name+'</span><span class="wn-card">#'+w.cardNum+'</span></div>';}).join('');
+  var namesHtml=winnersThisRound.map(function(w, idx){return '<div class="winner-name-chip" style="animation-delay: ' + (idx * 0.15) + 's;"><span class="wn-crown">👑</span><span>'+w.name+'</span><span class="wn-card">#'+w.cardNum+'</span></div>';}).join('');
   document.getElementById('winners-names-row').innerHTML=namesHtml;
   setTxt('w-prize',(data.prize||0));
   setTxt('w-prize-each',wc>1?Math.floor((data.prize||0)/wc)+' each ('+wc+' winners)':'');
@@ -3827,28 +3877,8 @@ function updateSoundUI(){
 }
 
 function initNotifications() {
-  if ('Notification' in window) {
-    var stored = localStorage.getItem('notificationsEnabled');
-    if (stored === null) {
-      notificationsEnabled = true;
-      localStorage.setItem('notificationsEnabled', 'true');
-    } else {
-      notificationsEnabled = stored !== 'false';
-    }
-    
-    if (notificationsEnabled && Notification.permission === 'default') {
-      setTimeout(function() {
-        Notification.requestPermission().then(function(perm) {
-          if (perm !== 'granted') {
-            console.log('Notification permission not granted');
-          }
-        }).catch(function(err){});
-      }, 1000);
-    }
-  } else {
-    notificationsEnabled = false;
-  }
-  updateNotifyToggleUI();
+  notificationsEnabled = false;
+  localStorage.setItem('notificationsEnabled', 'false');
 }
 
 function updateNotifyToggleUI() {
@@ -4389,21 +4419,26 @@ function handleAutoLogout() {
 function appInit() {
   if (tgUserId) {
     // Authenticated via Telegram or localStorage
+    updateUserInfo();
+    updateStakeProfile();
+    updateBalanceDisplay();
+    
+    // Instantly show the screen for 0-second load time
+    showScreen('screen-stake');
+    checkGameState();
+    
+    // Fetch fresh balances in the background
     fetchBalance().then(function(data){
       updateUserInfo();
       updateStakeProfile();
-      checkGameState();
-      
-      // Enter stake screen directly
-      showScreen('screen-stake');
-      
-      // Show onboarding if never shown
-      if (!localStorage.getItem('bingio_onboarding_shown')) {
-        setTimeout(function() {
-          showOnboarding();
-        }, 600);
-      }
-    });
+    }).catch(function(){});
+    
+    // Show onboarding if never shown
+    if (!localStorage.getItem('bingio_onboarding_shown')) {
+      setTimeout(function() {
+        showOnboarding();
+      }, 600);
+    }
   } else {
     autoLoginRegister();
   }
