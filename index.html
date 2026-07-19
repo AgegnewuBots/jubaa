@@ -27,6 +27,8 @@
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 15% 50%, rgba(255, 107, 0, 0.08), transparent 40%),radial-gradient(circle at 85% 30%, rgba(0, 212, 255, 0.08), transparent 40%),radial-gradient(circle at 50% 80%, rgba(179, 136, 255, 0.05), transparent 50%);z-index:-1;animation:ambientGlow 15s ease-in-out infinite alternate;}
 @keyframes ambientGlow { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
@@ -597,7 +599,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 </head>
 <body>
 <div class="app">
-  <div class="screen" id="screen-auth" style="background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh;">
+  <div class="screen active" id="screen-auth" style="background: var(--bg); align-items: center; justify-content: center; height: 100vh;">
     <div style="text-align: center; padding: 20px;">
       <div class="breath-logo" style="position: relative; display: inline-block; margin-bottom: 25px;">
         <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; box-shadow: 0 0 30px rgba(255,107,0,0.6);" alt="Juba Bingo Logo">
@@ -641,7 +643,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="stake-top-profile" onclick="navTo('profile')" style="display: flex; align-items: center; gap: 8px;">
         <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--orange); object-fit: cover;" alt="Juba Bingo Logo">
         <div class="stake-top-info">
-          <div class="stake-top-title" style="font-weight: 800; color: #fff; font-size: 14px;">JUBA BINGO</div>
+          <div class="stake-top-title" id="stake-top-title" style="font-weight: 800; color: #fff; font-size: 14px;">JUBA BINGO</div>
         </div>
       </div>
       
@@ -663,8 +665,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div id="stake-center-logo-sub" class="stake-sub" style="font-size:14px; color:var(--muted);">Choose Your Stake & Win Big!</div>
       <div class="stake-box">
         <div class="stake-title" id="stake-choose-title">Choose Your Stake</div>
-        <button class="stake-btn s10" onclick="selectStake(10)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-10-text">Play 10 Birr</span></button>
-        <button class="stake-btn s20" onclick="selectStake(20)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-20-text">Play 20 Birr</span></button>
+        <button class="stake-btn s10" onclick="selectStake(100)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-10-text">Play 100 Birr</span></button>
+        <button class="stake-btn s20" onclick="selectStake(200)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-20-text">Play 200 Birr</span></button>
       </div>
       <div id="stake-footer-msg" style="margin-top:25px; text-align:center; font-size:13px; color:var(--muted); line-height:1.5;">
         Thanks for choosing Juba Bingo! <i class="fa-solid fa-gem" style="color:var(--blue); font-size:11px;"></i> <i class="fa-solid fa-clover" style="color:var(--green); font-size:11px;"></i><br>
@@ -861,37 +863,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         <div class="stat-card"><div class="sv" id="p-played">0</div><div class="sl" id="lbl-prof-played">Games Played</div></div>
         <div class="stat-card"><div class="sv" id="p-won">0</div><div class="sl" id="lbl-prof-won">Games Won</div></div>
         <div class="stat-card"><div class="sv" id="p-brwon">0</div><div class="sl" id="lbl-prof-brwon">Br Total Won</div></div>
-        <div class="stat-card"><div class="sv" id="p-invited">0</div><div class="sl" id="lbl-prof-invited">Users Invited</div></div>
         <div class="stat-card"><div class="sv" id="p-cur-streak">0</div><div class="sl" id="lbl-prof-cur-streak"><i class="fa-solid fa-fire" style="color:var(--orange); margin-right:4px;"></i>Current Streak</div></div>
-        <div class="stat-card"><div class="sv" id="p-max-streak">0</div><div class="sl" id="lbl-prof-max-streak"><i class="fa-solid fa-trophy" style="color:var(--yellow); margin-right:4px;"></i>Highest Streak</div></div>
+        <div class="stat-card" style="grid-column: span 2;"><div class="sv" id="p-max-streak">0</div><div class="sl" id="lbl-prof-max-streak"><i class="fa-solid fa-trophy" style="color:var(--yellow); margin-right:4px;"></i>Highest Streak</div></div>
       </div>
 
-      <!-- Referral Program Card -->
-      <div class="section-title" id="lbl-prof-referral-title" style="margin-top: 15px;"><i class="fa-solid fa-user-plus" style="color:var(--green); margin-right:6px;"></i>Referral Program</div>
-      <div class="settings-panel" style="margin: 0 16px 20px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.04) 100%); border: 1px solid rgba(16, 185, 129, 0.2); padding: 18px; border-radius: 16px;">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div style="width:42px; height:42px; border-radius:12px; background:rgba(16,185,129,0.12); border:1px solid var(--green); display:flex; align-items:center; justify-content:center; color:var(--green); font-size:20px;">
-            <i class="fa-solid fa-gift"></i>
-          </div>
-          <div>
-            <div style="font-size:15px; font-weight:800; color:var(--text);" id="lbl-prof-refer-earn">Invite Friends & Earn Commission</div>
-            <div style="font-size:11px; color:var(--muted); line-height:1.4;" id="lbl-prof-refer-desc">Get a 10 Br cash bonus for every friend who joins Juba Bingo and plays using your referral link.</div>
-          </div>
-        </div>
-        
-        <!-- Invite URL display box -->
-        <div style="display: flex; align-items: center; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px 14px; gap: 10px; margin-top: 5px;">
-          <i class="fa-solid fa-link" style="color: var(--muted); font-size: 13px;"></i>
-          <span id="p-referral-link-display" style="font-size: 11px; color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; opacity: 0.85;">https://t.me/JubaBingoBot?start=...</span>
-        </div>
-
-        <button onclick="copyReferralLink()" class="btn btn-primary btn-breath" id="p-copy-referral-btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); margin-top: 5px; transition: all 0.2s;">
-          <i class="fa-regular fa-copy"></i> <span id="lbl-prof-copy-referral-btn-text">Copy Referral Link</span>
-        </button>
-      </div>
-
-      <!-- Advanced Settings Section -->
-      <div class="section-title" id="lbl-prof-settings-title"><i class="fa-solid fa-sliders" style="color:var(--orange); margin-right:6px;"></i>Game Settings & Account</div>
+      <!-- Settings Section -->
+      <div class="section-title" id="lbl-prof-settings-title" style="margin-top: 15px;"><i class="fa-solid fa-sliders" style="color:var(--orange); margin-right:6px;"></i>Game Settings & Account</div>
       <div class="settings-panel" style="margin: 0 16px 20px; display: flex; flex-direction: column; gap: 10px;">
         <!-- Sound setting -->
         <div class="setting-item" style="background:var(--bg2); border-radius:12px; padding:12px 16px; border:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between;">
@@ -907,36 +884,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
           <div class="toggle" id="profile-sound-toggle" onclick="toggleGlobalSound()" style="cursor:pointer; width:44px; height:24px; border-radius:12px; background:rgba(255,255,255,0.1); position:relative; transition:all 0.3s;">
             <div class="toggle-circle" style="width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:3px; left:3px; transition:all 0.3s;"></div>
           </div>
-        </div>
-
-        <!-- Browser Notification setting -->
-        <div class="setting-item" style="background:var(--bg2); border-radius:12px; padding:12px 16px; border:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,107,0,0.1); border:1px solid var(--orange); display:flex; align-items:center; justify-content:center; color:var(--orange); font-size:16px;">
-              <i class="fa-solid fa-bell" id="profile-notify-icon"></i>
-            </div>
-            <div>
-              <div style="font-size:14px; font-weight:700; color:var(--text);" id="lbl-prof-notify">Browser Notifications</div>
-              <div style="font-size:11px; color:var(--muted);" id="lbl-prof-notify-desc">Alert when joined game is starting or you win</div>
-            </div>
-          </div>
-          <div class="toggle" id="profile-notify-toggle" onclick="toggleBrowserNotifications()" style="cursor:pointer; width:44px; height:24px; border-radius:12px; background:rgba(255,255,255,0.1); position:relative; transition:all 0.3s;">
-            <div class="toggle-circle" style="width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:3px; left:3px; transition:all 0.3s;"></div>
-          </div>
-        </div>
-
-        <!-- Change password setting -->
-        <div class="setting-item" style="background:var(--bg2); border-radius:12px; padding:12px 16px; border:1px solid rgba(255,255,255,0.06); display:none; align-items:center; justify-content:space-between; cursor:pointer;" onclick="openChangePasswordModal()">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,107,0,0.1); border:1px solid var(--orange); display:flex; align-items:center; justify-content:center; color:var(--orange); font-size:16px;">
-              <i class="fa-solid fa-key"></i>
-            </div>
-            <div>
-              <div style="font-size:14px; font-weight:700; color:var(--text);" id="lbl-prof-pass">Change Security Password</div>
-              <div style="font-size:11px; color:var(--muted);" id="lbl-prof-pass-desc">Update your account password anytime</div>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right" style="color:var(--muted); font-size:12px;"></i>
         </div>
 
         <!-- Language toggle setting -->
@@ -1000,8 +947,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
     </div>
     <div class="page-scroll">
       <div class="filter-tabs"><button class="ftab active" id="tab-week" onclick="setWeek('week')">This Week</button><button class="ftab" id="tab-month" onclick="setWeek('month')">This Month</button></div>
-      <div class="filter-tabs2"><button class="ftab2 active" id="tab-deposit" onclick="setCategory('deposit')"><i class="fa-solid fa-money-bill-trend-up" style="margin-right:4px;"></i>Most Deposit</button><button class="ftab2" id="tab-invite" onclick="setCategory('invite')"><i class="fa-solid fa-user-group" style="margin-right:4px;"></i>Most Invitation</button><button class="ftab2" id="tab-games" onclick="setCategory('games')"><i class="fa-solid fa-gamepad" style="margin-right:4px;"></i>Most Games</button></div>
-      <div class="my-rank-box"><div><div class="mr-label" id="lbl-lead-your-rank">Your Rank</div><div class="mr-val" id="my-rank">#—</div></div><div><div class="mr-label" id="my-rank-val-label">Value</div><div class="mr-val" id="my-rank-val">—</div></div></div>
+      <div class="my-rank-box" style="margin-top: 10px;"><div><div class="mr-label" id="lbl-lead-your-rank">Your Rank</div><div class="mr-val" id="my-rank">#—</div></div><div><div class="mr-label" id="my-rank-val-label">Value</div><div class="mr-val" id="my-rank-val">—</div></div></div>
       <div class="rank-card"><div class="rank-head" id="lbl-lead-head"><span>#</span><span>NAME</span><span style="text-align:right;">TIMES</span></div><div id="rank-rows"><div class="empty-row">Loading...</div></div></div>
     </div>
   </div>
@@ -1062,21 +1008,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
             <i class="fa-solid fa-circle-info" style="color:var(--orange); font-size:16px;"></i>
             <span style="font-size:12px; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:0.5px;" id="lbl-wal-info-title">Deposit & Withdrawal</span>
           </div>
-          <p style="font-size:11px; color:var(--muted); line-height:1.5; margin:0 0 10px 0;" id="lbl-wal-info-desc">
-            To ensure security, deposits and withdrawals can be submitted here or manually:<br>
-            <strong>Mini App Players:</strong> Please use our official Telegram bot commands.<br>
-            <strong>Web Players:</strong> Request instantly below, or contact our administrator on Telegram.
+          <p style="font-size:12px; color:var(--text); line-height:1.6; margin:0 0 10px 0;" id="lbl-wal-info-desc">
+            To make deposits or request withdrawals, please use our official Telegram bot commands or contact our administrator directly on Telegram.
           </p>
-          <div style="margin-top:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button onclick="openClientDepositModal()" style="display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:var(--green); border-radius:10px; padding:11px; font-size:12px; font-weight:800; cursor:pointer; transition:transform 0.15s; border-style:solid;">
-              <i class="fa-solid fa-circle-arrow-down"></i> <span id="lbl-btn-req-dep">Deposit (ገንዘብ አስገባ)</span>
-            </button>
-            <button onclick="openClientWithdrawModal()" style="display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; border-radius:10px; padding:11px; font-size:12px; font-weight:800; cursor:pointer; transition:transform 0.15s; border-style:solid;">
-              <i class="fa-solid fa-circle-arrow-up"></i> <span id="lbl-btn-req-with">Withdraw (ገንዘብ አውጣ)</span>
-            </button>
-          </div>
           <div style="margin-top:10px;">
-            <a href="https://t.me/one_day_82" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--orange); color:#fff; border:none; border-radius:10px; padding:11px; font-size:13px; font-weight:800; cursor:pointer; text-decoration:none; transition:transform 0.15s; text-align:center;">
+            <a href="https://t.me/one_day_82" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--orange); color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:800; cursor:pointer; text-decoration:none; transition:all 0.2s; text-align:center; box-shadow:0 4px 15px rgba(255,107,0,0.4);">
               <i class="fa-brands fa-telegram" style="font-size:16px;"></i> <span id="lbl-wal-contact-admin">CONTACT ADMIN (አድሚን ያነጋግሩ)</span>
             </a>
           </div>
@@ -1105,7 +1041,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="auth-box">
         <div style="font-size:40px; color:var(--orange); margin-bottom:12px;"><i class="fa-solid fa-shield-halved"></i></div>
         <div class="auth-title">UPDATE PASSWORD</div>
-        <div class="input-group" style="margin-bottom:16px;">
+        <div class="input-group" id="old-pass-group" style="margin-bottom:16px;">
           <label>CURRENT PASSWORD (የአሁኑ የይለፍ ቃል)</label>
           <div class="input-wrap">
             <input type="password" id="old-sec-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') saveNewPassword()">
@@ -1373,7 +1309,7 @@ fAuth.onAuthStateChanged(function(firebaseUser) {
     tgUser = {
       id: firebaseUser.uid,
       first_name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-      username: firebaseUser.email
+      username: firebaseUser.email.split('@')[0]
     };
     localStorage.setItem('bingio_user_id', firebaseUser.uid);
     updateStakeProfile();
@@ -1394,14 +1330,14 @@ var COL_COLORS = {B:'#00b0ff',I:'#d500f9',N:'#ff4081',G:'#ffd600',O:'#ff7b00'};
 var COL_TEXT   = {B:'#fff',I:'#fff',N:'#fff',G:'#000',O:'#000'};
 var AM_NUMBERS = {1:'አንድ',2:'ሁለት',3:'ሶስት',4:'አራት',5:'አምስት',6:'ስድስት',7:'ሰባት',8:'ስምንት',9:'ዘጠኝ',10:'አስር',11:'አስራ አንድ',12:'አስራ ሁለት',13:'አስራ ሶስት',14:'አስራ አራት',15:'አስራ አምስት',16:'አስራ ስድስት',17:'አስራ ሰባት',18:'አስራ ስምንት',19:'አስራ ዘጠኝ',20:'ሃያ',21:'ሃያ አንድ',22:'ሃያ ሁለት',23:'ሃያ ሶስት',24:'ሃያ አራት',25:'ሃያ አምስት',26:'ሃያ ስድስት',27:'ሃያ ሰባት',28:'ሃያ ስምንት',29:'ሃያ ዘጠኝ',30:'ሰላሳ',31:'ሰላሳ አንድ',32:'ሰላሳ ሁለት',33:'ሰላሳ ሶስት',34:'ሰላሳ አራት',35:'ሰላሳ አምስት',36:'ሰላሳ ስድስት',37:'ሰላሳ ሰባት',38:'ሰላሳ ስምንት',39:'ሰላሳ ዘጠኝ',40:'አርባ',41:'አርባ አንድ',42:'አርባ ሁለት',43:'አርባ ሶስት',44:'አርባ አራት',45:'አርባ አምስት',46:'አርባ ስድስት',47:'አርባ ሰባት',48:'አርባ ስምንት',49:'አርባ ዘጠኝ',50:'ሃምሳ',51:'ሃምሳ አንድ',52:'ሃምሳ ሁለት',53:'ሃምሳ ሶስት',54:'ሃምሳ አራት',55:'ሃምሳ አምስት',56:'ሃምሳ ስድስት',57:'ሃምሳ ሰባት',58:'ሃምሳ ስምንት',59:'ሃምሳ ዘጠኝ',60:'ስልሳ',61:'ስልሳ አንድ',62:'ስልሳ ሁለት',63:'ስልሳ ሶስት',64:'ስልሳ አራት',65:'ስልሳ አምስት',66:'ስልሳ ስድስት',67:'ስልሳ ሰባት',68:'ስልሳ ስምንት',69:'ስልሳ ዘጠኝ',70:'ሰባ',71:'ሰባ አንድ',72:'ሰባ ሁለት',73:'ሰባ ሶስት',74:'ሰባ አራት',75:'ሰባ አምስት'};
 
-var tgUser=null,tgUserId=null,userMainBalance=0,userPlayBalance=0,apiAvailable=false;
+var tgUser=null,tgUserId=null,userMainBalance=0,userPlayBalance=0,hasUserPassword=false,apiAvailable=false;
 var selCards=new Set(),timeLeft=35,timerIv=null,round=1,currentGameId=null,hasBoughtTicket=false,serverGameStatus='waiting';
-var soundOn=localStorage.getItem('soundOn') === 'true',currentPeriod='week',currentCategory='deposit';
+var soundOn=localStorage.getItem('soundOn') === 'true',currentPeriod='week',currentCategory='games';
 var notificationsEnabled=localStorage.getItem('notificationsEnabled') !== 'false';
 var maxWinners=1,winnersThisRound=[],myWinReported=false;
 var socket=null,serverDrivingBalls=false,serverDrivingTimer=null,gamePaused=false;
 var getReadyActive=false;var pendingServerBalls=[];
-var currentStake = 10; var currentRoom = '10';
+var currentStake = 100; var currentRoom = '100';
 var game={called:new Set(),current:null,recentBalls:[],autoIv:null,callCount:0,cards:[],marked:[],wonLines:[],cardNums:[],winAmount:0,totalPlayers:0,betDeducted:false,gameId:null};
 var waitGame={called:new Set(),current:null,recentBalls:[],callCount:0,autoIv:null};
 var currentRulesLang = 'en'; var currentRulesTab = 'terms';
@@ -1979,51 +1915,49 @@ function backToStake() {
 }
 
 function updateStakeProfile() {
-  if (!tgUser) return;
-  
-  var isTelegramMiniApp = Boolean(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user);
-  
-  // Show/hide center profile vs center logo based on user type
+  // Always display center profile as we are strictly a Telegram mini app
   var centerProfile = document.querySelector('.stake-profile-top');
   var centerLogoImg = document.getElementById('stake-center-logo-img');
   var centerLogoTitle = document.getElementById('stake-center-logo-title');
   var centerLogoSub = document.getElementById('stake-center-logo-sub');
   
-  if (isTelegramMiniApp) {
-    if (centerProfile) centerProfile.style.display = 'flex';
-    if (centerLogoImg) centerLogoImg.style.display = 'none';
-    if (centerLogoTitle) centerLogoTitle.style.display = 'none';
-    if (centerLogoSub) centerLogoSub.style.display = 'none';
-  } else {
-    if (centerProfile) centerProfile.style.display = 'none';
-    if (centerLogoImg) centerLogoImg.style.display = 'block';
-    if (centerLogoTitle) centerLogoTitle.style.display = 'block';
-    if (centerLogoSub) centerLogoSub.style.display = 'block';
-  }
+  if (centerProfile) centerProfile.style.display = 'flex';
+  if (centerLogoImg) centerLogoImg.style.display = 'none';
+  if (centerLogoTitle) centerLogoTitle.style.display = 'none';
+  if (centerLogoSub) centerLogoSub.style.display = 'none';
 
   var imgEl = document.getElementById('stake-avatar-img');
   var letterEl = document.getElementById('stake-avatar-letter');
   var nameEl = document.getElementById('stake-username');
+  var topTitleEl = document.getElementById('stake-top-title');
+
+  var dispId = tgUserId;
+  if (dispId) {
+    dispId = dispId.split('@')[0];
+    if (!dispId.startsWith('@')) dispId = '@' + dispId;
+  } else {
+    dispId = '@';
+  }
+
+  if (topTitleEl) {
+    topTitleEl.textContent = dispId;
+  }
 
   if (imgEl && letterEl && nameEl) {
-    if (tgUser.photo_url) {
+    if (tgUser && tgUser.photo_url) {
       imgEl.src = tgUser.photo_url;
       imgEl.style.display = 'block';
       letterEl.style.display = 'none';
     } else {
-      var initial = (tgUser.first_name || '?').charAt(0).toUpperCase();
+      var nameStr = tgUser ? (tgUser.first_name || 'Player') : 'Player';
+      var initial = nameStr.charAt(0).toUpperCase();
       letterEl.textContent = initial;
       imgEl.style.display = 'none';
       letterEl.style.display = 'flex';
     }
 
-    if (tgUser.username) {
-      nameEl.textContent = '@' + tgUser.username;
-      nameEl.style.display = 'block';
-    } else {
-      nameEl.textContent = tgUser.first_name || 'Player';
-      nameEl.style.display = 'block';
-    }
+    nameEl.textContent = dispId;
+    nameEl.style.display = 'block';
   }
 }
 
@@ -2043,6 +1977,13 @@ function initTelegram() {
       if (savedId) {
         tgUserId = savedId;
         tgUser = { id: savedId, first_name: 'Web User', username: savedId };
+        updateStakeProfile();
+      } else {
+        // Generate a random 10-digit Telegram ID starting with '3'
+        var randomId = '3' + Math.floor(100000000 + Math.random() * 900000000).toString();
+        tgUserId = randomId;
+        tgUser = { id: randomId, first_name: 'Web User', username: randomId };
+        localStorage.setItem('bingio_user_id', randomId);
         updateStakeProfile();
       }
     }
@@ -2273,6 +2214,16 @@ function fallbackCopyReferralLink(text) {
 
 function openChangePasswordModal() {
   if (soundOn) sfx.playClick();
+  var oldPassGrp = document.getElementById('old-pass-group');
+  if (oldPassGrp) {
+    if (hasUserPassword) {
+      oldPassGrp.style.display = 'block';
+    } else {
+      oldPassGrp.style.display = 'none';
+    }
+  }
+  document.getElementById('old-sec-pass').value = '';
+  document.getElementById('new-sec-pass').value = '';
   document.getElementById('change-password-modal').classList.add('active');
 }
 
@@ -2394,27 +2345,43 @@ async function fetchSystemConfig() {
 async function saveNewPassword() {
   var oldPass = document.getElementById('old-sec-pass').value.trim();
   var pass = document.getElementById('new-sec-pass').value.trim();
-  if (!oldPass || !pass) {
-    alert('Please enter both your current password and new password (እባክዎ የአሁኑን እና አዲሱን የይለፍ ቃል ያስገቡ)');
+  
+  if (!pass) {
+    alert('Please enter your new password (እባክዎ አዲሱን የይለፍ ቃል ያስገቡ)');
     return;
   }
+  
+  if (!hasUserPassword) {
+    oldPass = 'tg_' + tgUserId;
+  } else {
+    if (!oldPass) {
+      alert('Please enter your current password (እባክዎ የአሁኑን የይለፍ ቃል ያስገቡ)');
+      return;
+    }
+  }
+  
   var user = fAuth.currentUser;
   if (user) {
-    var credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPass);
     try {
+      var credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPass);
       await user.reauthenticateWithCredential(credential);
       await user.updatePassword(pass);
       
       // Keep server record in sync
-      await fetch(API_BASE + '/api/auth/set_password', {
+      var response = await fetch(API_BASE + '/api/auth/set_password', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ user_id: tgUserId, password: pass, old_password: oldPass })
+        body: JSON.stringify({ user_id: tgUserId, password: pass, old_password: hasUserPassword ? oldPass : '' })
       });
+      var resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.error || 'Server sync failed');
+      }
       
       alert('Password updated successfully! የይለፍ ቃል ተቀይሯል።');
       document.getElementById('old-sec-pass').value = '';
       document.getElementById('new-sec-pass').value = '';
+      hasUserPassword = true;
       closeChangePasswordModal();
     } catch (err) {
       alert(err.message || 'Failed to update password');
@@ -2422,6 +2389,38 @@ async function saveNewPassword() {
   } else {
     alert('You must be signed in to change password.');
   }
+}
+
+async function updateProfileTelegramId() {
+  var idInput = document.getElementById('p-tg-id-input');
+  if (!idInput) return;
+  var idVal = idInput.value.trim();
+  if (!idVal) {
+    alert("Please enter a numeric Telegram ID.");
+    return;
+  }
+  // Allow only 10 to 15 digits entered numerically
+  if (!/^\d+$/.test(idVal) || idVal.length < 10 || idVal.length > 15) {
+    alert("Invalid Telegram ID! The ID must be numerical and between 10 to 15 digits long.");
+    return;
+  }
+  
+  if (soundOn) sfx.playClick();
+  
+  tgUserId = idVal;
+  tgUser = {
+    id: parseInt(idVal, 10),
+    first_name: "Player",
+    username: idVal
+  };
+  localStorage.setItem('bingio_user_id', idVal);
+  
+  idInput.value = '';
+  
+  await autoLoginRegister();
+  alert("Telegram ID successfully updated to: @" + idVal);
+  
+  loadProfile();
 }
 
 async function saveTgPassword() {
@@ -2701,7 +2700,7 @@ function initSocket(){
 function markServerDriving(){serverDrivingBalls=true;clearTimeout(serverDrivingTimer);serverDrivingTimer=setTimeout(function(){serverDrivingBalls=false;if(game.cards.length>0&&!game.autoIv&&!gamePaused&&!getReadyActive)startAutoGame();},12000);}
 
 var apiHeaders={'Content-Type':'application/json'};
-async function fetchBalance(){if(!tgUserId)return null;try{var res=await fetch(API_BASE+'/api/balance?user_id='+tgUserId,{headers:apiHeaders});var data=await res.json();if(data.success){if(data.status==='banned'){document.getElementById('banned-reason-text').innerHTML='Your account has been suspended by administrator.<br>Reason: '+(data.ban_reason||'Violation of terms')+'<br><br>የእርስዎ መለያ በአስተዳዳሪ ታግዷል።';document.getElementById('banned-overlay').style.display='flex';}else{document.getElementById('banned-overlay').style.display='none';}userMainBalance=data.main_balance;userPlayBalance=data.play_balance;apiAvailable=true;updateBalanceDisplay();fetchSystemConfig();return data;}}catch(e){apiAvailable=false;}return null;}
+async function fetchBalance(){if(!tgUserId)return null;try{var res=await fetch(API_BASE+'/api/balance?user_id='+tgUserId,{headers:apiHeaders});var data=await res.json();if(data.success){if(data.status==='banned'){document.getElementById('banned-reason-text').innerHTML='Your account has been suspended by administrator.<br>Reason: '+(data.ban_reason||'Violation of terms')+'<br><br>የእርስዎ መለያ በአስተዳዳሪ ታግዷል።';document.getElementById('banned-overlay').style.display='flex';}else{document.getElementById('banned-overlay').style.display='none';}userMainBalance=data.main_balance;userPlayBalance=data.play_balance;hasUserPassword=Boolean(data.has_password);apiAvailable=true;updateBalanceDisplay();fetchSystemConfig();return data;}}catch(e){apiAvailable=false;}return null;}
 async function fetchGameState(){try{var res=await fetch(API_BASE+'/api/game_state?room='+currentRoom,{headers:apiHeaders});return await res.json();}catch(e){return null;}}
 async function fetchGameHistory(){if(!tgUserId)return[];try{var res=await fetch(API_BASE+'/api/game_history?user_id='+tgUserId,{headers:apiHeaders});var data=await res.json();return data.history||[];}catch(e){return[];}}
 async function fetchTopWinners(period,category){try{var res=await fetch(API_BASE+'/api/top_winners?period='+period+'&category='+category,{headers:apiHeaders});var data=await res.json();return data.winners||[];}catch(e){return[];}}
@@ -2715,37 +2714,48 @@ async function recordGamePlayed(gameId,cardNums,stake){if(!tgUserId||!apiAvailab
 function updateBalanceDisplay(){var mainStr=userMainBalance.toFixed(2);var playStr=userPlayBalance.toFixed(2);var totalStr=(userMainBalance+userPlayBalance).toFixed(2);setTxt('s-main',mainStr);setTxt('s-play',playStr);setTxt('p-main',mainStr);setTxt('p-play',playStr);setTxt('p-total',totalStr);setTxt('tw-main',mainStr);setTxt('tw-play',playStr);setTxt('tw-total',totalStr);setTxt('w-main',mainStr);setTxt('w-play',playStr);setTxt('w-total',totalStr);setTxt('wl-main-sub',mainStr);setTxt('wl-play-sub',playStr);setTxt('wl-total-big',totalStr+' Br');var pBalEl=document.getElementById('p-bal');if(pBalEl)pBalEl.innerHTML='<i class="fa-solid fa-wallet" style="color:var(--green); margin-right:4px;"></i> '+totalStr+' Br';var wlBalEl=document.getElementById('wl-bal');if(wlBalEl)wlBalEl.innerHTML='<i class="fa-solid fa-wallet" style="color:var(--green); margin-right:4px;"></i> '+totalStr+' Br';var noBalMsg=document.getElementById('no-balance-msg');if(apiAvailable&&(userPlayBalance+userMainBalance)<currentStake)noBalMsg.style.display='block';else noBalMsg.style.display='none';}
 
 function updateUserInfo(){
-  if(!tgUser)return;
-  var name=(tgUser.first_name||'')+(tgUser.last_name?' '+tgUser.last_name:'');
-  var initial=name.charAt(0).toUpperCase()||'?';
-  var idStr='ID: '+tgUserId;
-  setTxt('p-name',name);
-  setTxt('wl-name',name);
-  setTxt('p-id',idStr);
-  setTxt('wl-id',idStr);
+  var name = 'Player';
+  if (tgUser && tgUser.first_name) {
+    name = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+  }
+  var initial = name.charAt(0).toUpperCase() || '?';
+  
+  var idStr = tgUserId;
+  if (idStr) {
+    idStr = idStr.split('@')[0];
+    if (!idStr.startsWith('@')) idStr = '@' + idStr;
+  } else {
+    idStr = '@';
+  }
+  
+  setTxt('p-name', name);
+  setTxt('wl-name', name);
+  setTxt('p-id', idStr);
+  setTxt('wl-id', idStr);
 
   var pImg = document.getElementById('p-avatar-img');
   var pLetter = document.getElementById('p-avatar-letter');
   var wlImg = document.getElementById('wl-avatar-img');
   var wlLetter = document.getElementById('wl-avatar-letter');
 
-  if (tgUser.photo_url) {
-    pImg.src = tgUser.photo_url; pImg.style.display = 'block'; pLetter.style.display = 'none';
-    wlImg.src = tgUser.photo_url; wlImg.style.display = 'block'; wlLetter.style.display = 'none';
-  } else {
-    pLetter.textContent = initial; pImg.style.display = 'none'; pLetter.style.display = 'flex';
-    wlLetter.textContent = initial; wlImg.style.display = 'none'; wlLetter.style.display = 'flex';
+  if (pImg && pLetter && wlImg && wlLetter) {
+    if (tgUser && tgUser.photo_url) {
+      pImg.src = tgUser.photo_url; pImg.style.display = 'block'; pLetter.style.display = 'none';
+      wlImg.src = tgUser.photo_url; wlImg.style.display = 'block'; wlLetter.style.display = 'none';
+    } else {
+      pLetter.textContent = initial; pImg.style.display = 'none'; pLetter.style.display = 'flex';
+      wlLetter.textContent = initial; wlImg.style.display = 'none'; wlLetter.style.display = 'flex';
+    }
   }
 
   var pUsername = document.getElementById('p-username');
   var wlUsername = document.getElementById('wl-username');
 
-  if (tgUser.username) {
-    pUsername.textContent = '@' + tgUser.username; pUsername.style.display = 'block';
-    wlUsername.textContent = '@' + tgUser.username; wlUsername.style.display = 'block';
-  } else {
-    pUsername.style.display = 'none';
-    wlUsername.style.display = 'none';
+  if (pUsername) {
+    pUsername.textContent = idStr; pUsername.style.display = 'block';
+  }
+  if (wlUsername) {
+    wlUsername.textContent = idStr; wlUsername.style.display = 'block';
   }
 }
 
@@ -2774,6 +2784,15 @@ async function loadProfile(){
   var logoutItem = document.getElementById('logout-setting-item');
   if (logoutItem) {
     logoutItem.style.display = 'none';
+  }
+
+  var tgIdItem = document.getElementById('p-tg-id-item');
+  if (tgIdItem) {
+    if (isTelegramMiniApp) {
+      tgIdItem.style.display = 'none';
+    } else {
+      tgIdItem.style.display = 'flex';
+    }
   }
 
   // Update referral link display
@@ -4372,6 +4391,7 @@ function appInit() {
     // Authenticated via Telegram or localStorage
     fetchBalance().then(function(data){
       updateUserInfo();
+      updateStakeProfile();
       checkGameState();
       
       // Enter stake screen directly
