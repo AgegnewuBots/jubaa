@@ -597,56 +597,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 </head>
 <body>
 <div class="app">
-  <div class="screen" id="screen-auth">
-    <div class="auth-container">
-      <div class="auth-box">
-        <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; margin: 0 auto 15px; box-shadow: 0 0 20px rgba(255,107,0,0.5); display: block;" alt="Juba Bingo Logo">
-        <div class="auth-title" style="color: var(--orange); font-size: 26px; font-weight: 900; text-shadow: 0 0 10px rgba(255,107,0,0.3);">JUBA BINGO</div>
-        
-        <div class="auth-tabs">
-          <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</div>
-          <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</div>
-        </div>
-
-        <div class="auth-form active" id="form-login">
-          <div class="input-group">
-            <label>EMAIL OR PHONE NUMBER (ኢሜይል ወይም ስልክ ቁጥር)</label>
-            <div class="input-wrap">
-              <input type="text" id="login-id" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678" onkeydown="if(event.key === 'Enter') doLogin()">
-            </div>
-          </div>
-          <div class="input-group">
-            <label>PASSWORD (የይለፍ ቃል)</label>
-            <div class="input-wrap">
-              <input type="password" id="login-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') doLogin()">
-              <span class="eye-icon" onclick="togglePassword('login-pass')"><i class="fa-solid fa-eye"></i></span>
-            </div>
-          </div>
-          <button class="auth-btn" onclick="doLogin()">ENTER GAME</button>
-        </div>
-
-        <div class="auth-form" id="form-register">
-          <div class="input-group">
-            <label>FULL NAME (ሙሉ ስም)</label>
-            <div class="input-wrap">
-              <input type="text" id="reg-name" class="auth-input" placeholder="e.g. Abebe Kebede" onkeydown="if(event.key === 'Enter') doRegister()">
-            </div>
-          </div>
-          <div class="input-group">
-            <label>EMAIL OR PHONE NUMBER (ኢሜይል ወይም ስልክ ቁጥር)</label>
-            <div class="input-wrap">
-              <input type="text" id="reg-phone" class="auth-input" placeholder="e.g. user@gmail.com or 0912345678" onkeydown="if(event.key === 'Enter') doRegister()">
-            </div>
-          </div>
-          <div class="input-group">
-            <label>CREATE PASSWORD (የይለፍ ቃል)</label>
-            <div class="input-wrap">
-              <input type="password" id="reg-pass" class="auth-input" placeholder="••••••••" onkeydown="if(event.key === 'Enter') doRegister()">
-              <span class="eye-icon" onclick="togglePassword('reg-pass')"><i class="fa-solid fa-eye"></i></span>
-            </div>
-          </div>
-          <button class="auth-btn" onclick="doRegister()">CREATE ACCOUNT</button>
-        </div>
+  <div class="screen" id="screen-auth" style="background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <div style="text-align: center; padding: 20px;">
+      <div class="breath-logo" style="position: relative; display: inline-block; margin-bottom: 25px;">
+        <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; box-shadow: 0 0 30px rgba(255,107,0,0.6);" alt="Juba Bingo Logo">
+        <div style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 2px dashed var(--orange); animation: rotate 15s linear infinite; opacity: 0.5;"></div>
+      </div>
+      <div style="color: var(--orange); font-size: 32px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 15px rgba(255,107,0,0.4); margin-bottom: 10px;">JUBA BINGO</div>
+      <div style="color: var(--text); font-size: 15px; font-weight: 700; margin-bottom: 25px; opacity: 0.9;">TELEGRAM MINI APP</div>
+      
+      <!-- Premium Spinner -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 18px 30px; border-radius: 16px; backdrop-filter: blur(10px);">
+        <div class="spinner-modern" style="width: 28px; height: 28px; border: 3px solid rgba(255,107,0,0.15); border-top-color: var(--orange); border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
+        <div style="font-size: 13px; color: var(--muted); font-weight: 600;" id="splash-loading-text">Initializing secure game session...<br><span style="font-size: 11px; opacity: 0.7;">ደህንነቱ የተጠበቀ ክፍለ ጊዜ በመጀመር ላይ...</span></div>
       </div>
     </div>
   </div>
@@ -963,7 +926,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         </div>
 
         <!-- Change password setting -->
-        <div class="setting-item" style="background:var(--bg2); border-radius:12px; padding:12px 16px; border:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="openChangePasswordModal()">
+        <div class="setting-item" style="background:var(--bg2); border-radius:12px; padding:12px 16px; border:1px solid rgba(255,255,255,0.06); display:none; align-items:center; justify-content:space-between; cursor:pointer;" onclick="openChangePasswordModal()">
           <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,107,0,0.1); border:1px solid var(--orange); display:flex; align-items:center; justify-content:center; color:var(--orange); font-size:16px;">
               <i class="fa-solid fa-key"></i>
@@ -1359,8 +1322,52 @@ var fDb = firebase.firestore();
 // Keep a flag to prevent multiple triggerings during state change
 var isFAuthInit = false;
 
+async function autoLoginRegister() {
+  if (!tgUserId) {
+    initTelegram();
+  }
+  if (!tgUserId) return;
+  
+  var email = tgUserId + '@juba.bingo';
+  var pass = 'tg_' + tgUserId;
+  var name = tgUser ? (tgUser.first_name || 'Player') : 'Player';
+  
+  try {
+    var userCredential = await fAuth.signInWithEmailAndPassword(email, pass);
+    var firebaseUser = userCredential.user;
+    tgUserId = firebaseUser.uid;
+    localStorage.setItem('bingio_user_id', firebaseUser.uid);
+    updateStakeProfile();
+  } catch (err) {
+    if (err.code === 'auth/user-not-found' || err.message.indexOf('user-not-found') !== -1 || err.code === 'auth/invalid-credential' || err.message.indexOf('invalid-credential') !== -1) {
+      try {
+        var userCredential = await fAuth.createUserWithEmailAndPassword(email, pass);
+        var firebaseUser = userCredential.user;
+        await firebaseUser.updateProfile({ displayName: name });
+        
+        try {
+          await fetch(API_BASE + '/api/auth/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name: name, phone: firebaseUser.uid, password: pass })
+          });
+        } catch (apiErr) {
+          console.error('Backend api register error:', apiErr);
+        }
+        
+        tgUserId = firebaseUser.uid;
+        localStorage.setItem('bingio_user_id', firebaseUser.uid);
+        updateStakeProfile();
+      } catch (regErr) {
+        console.error('Auto registration failed:', regErr);
+      }
+    } else {
+      console.error('Auto sign in failed:', err);
+    }
+  }
+}
+
 fAuth.onAuthStateChanged(function(firebaseUser) {
-  var isTgMiniApp = Boolean(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user);
   if (firebaseUser) {
     tgUserId = firebaseUser.uid;
     tgUser = {
@@ -1375,12 +1382,7 @@ fAuth.onAuthStateChanged(function(firebaseUser) {
       appInit();
     }
   } else {
-    if (!isTgMiniApp) {
-      tgUserId = null;
-      tgUser = null;
-      localStorage.removeItem('bingio_user_id');
-      showScreen('screen-auth');
-    }
+    autoLoginRegister();
   }
 });
 
@@ -1394,7 +1396,7 @@ var AM_NUMBERS = {1:'አንድ',2:'ሁለት',3:'ሶስት',4:'አራት',5:'አ
 
 var tgUser=null,tgUserId=null,userMainBalance=0,userPlayBalance=0,apiAvailable=false;
 var selCards=new Set(),timeLeft=35,timerIv=null,round=1,currentGameId=null,hasBoughtTicket=false,serverGameStatus='waiting';
-var soundOn=localStorage.getItem('soundOn') !== 'false',currentPeriod='week',currentCategory='deposit';
+var soundOn=localStorage.getItem('soundOn') === 'true',currentPeriod='week',currentCategory='deposit';
 var notificationsEnabled=localStorage.getItem('notificationsEnabled') !== 'false';
 var maxWinners=1,winnersThisRound=[],myWinReported=false;
 var socket=null,serverDrivingBalls=false,serverDrivingTimer=null,gamePaused=false;
@@ -1849,7 +1851,10 @@ class SoundFX {
     osc.start();
     osc.stop(this.ctx.currentTime + duration);
   }
-  playClick() { this.playTone(800, 'triangle', 0.05, 0.15); }
+  playClick() {
+    this.playTone(1600, 'sine', 0.02, 0.25);
+    setTimeout(() => this.playTone(1200, 'sine', 0.015, 0.15), 15);
+  }
   playBlip() {
     this.playTone(587.33, 'sine', 0.1, 0.15);
     setTimeout(() => this.playTone(880, 'sine', 0.08, 0.12), 40);
@@ -2768,14 +2773,14 @@ async function loadProfile(){
   var isTelegramMiniApp = Boolean(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user);
   var logoutItem = document.getElementById('logout-setting-item');
   if (logoutItem) {
-    logoutItem.style.display = isTelegramMiniApp ? 'none' : 'flex';
+    logoutItem.style.display = 'none';
   }
 
   // Update referral link display
   var referLink = 'https://t.me/JubaBingoBot?start=' + (tgUserId || '');
   var referLinkEl = document.getElementById('p-referral-link-display');
   if (referLinkEl) {
-    referLinkEl.textContent = tgUserId ? referLink : 'Log in to view referral link';
+    referLinkEl.textContent = tgUserId ? referLink : 'Please open the app to view your referral link';
   }
 
   var stats=await fetchProfileStats();
@@ -4364,31 +4369,23 @@ function handleAutoLogout() {
 
 function appInit() {
   if (tgUserId) {
-    startInactivityCheck();
     // Authenticated via Telegram or localStorage
     fetchBalance().then(function(data){
       updateUserInfo();
       checkGameState();
       
-      var isTgMiniApp = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
-      if (isTgMiniApp && data && !data.has_password) {
-        // First time Telegram user needs to create a password
-        showScreen('screen-create-password');
-      } else {
-        // Web users or returning telegram users enter stake screen directly
-        showScreen('screen-stake');
-        
-        // Show onboarding if never shown
-        if (!localStorage.getItem('bingio_onboarding_shown')) {
-          setTimeout(function() {
-            showOnboarding();
-          }, 600);
-        }
+      // Enter stake screen directly
+      showScreen('screen-stake');
+      
+      // Show onboarding if never shown
+      if (!localStorage.getItem('bingio_onboarding_shown')) {
+        setTimeout(function() {
+          showOnboarding();
+        }, 600);
       }
     });
   } else {
-    // Show Auth Screen
-    showScreen('screen-auth');
+    autoLoginRegister();
   }
 }
 
