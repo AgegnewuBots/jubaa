@@ -609,7 +609,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 </head>
 <body>
 <div class="app">
-  <div class="screen active" id="screen-auth" style="background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh;">
+  <div class="screen" id="screen-auth" style="background: var(--bg); align-items: center; justify-content: center; height: 100vh;">
     <div style="text-align: center; padding: 20px; width: 100%; max-width: 360px;">
       <div class="breath-logo" style="position: relative; display: inline-block; margin-bottom: 25px;">
         <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; box-shadow: 0 0 30px rgba(255,107,0,0.6);" alt="Juba Bingo Logo">
@@ -679,7 +679,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       </div>
     </div>
   </div>
-  <div class="screen" id="screen-stake">
+  <div class="screen active" id="screen-stake">
     <div class="stake-container">
       <!-- Top-left logo instead of user profile -->
       <div class="stake-top-profile" onclick="navTo('profile')" style="display: flex; align-items: center; gap: 8px;">
@@ -707,8 +707,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div id="stake-center-logo-sub" class="stake-sub" style="font-size:14px; color:var(--muted);">Choose Your Stake & Win Big!</div>
       <div class="stake-box">
         <div class="stake-title" id="stake-choose-title">Choose Your Stake</div>
-        <button class="stake-btn s10" onclick="selectStake(100)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-10-text">Play 100 Birr</span></button>
-        <button class="stake-btn s20" onclick="selectStake(200)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-20-text">Play 200 Birr</span></button>
+        <button class="stake-btn s10" onclick="selectStake(10)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-10-text">Play 10 Birr</span></button>
+        <button class="stake-btn s20" onclick="selectStake(20)"><i class="fa-solid fa-play" style="margin-right:6px; font-size:16px;"></i><span id="stake-btn-20-text">Play 20 Birr</span></button>
       </div>
       <div id="stake-footer-msg" style="margin-top:25px; text-align:center; font-size:13px; color:var(--muted); line-height:1.5;">
         Thanks for choosing Juba Bingo! <i class="fa-solid fa-gem" style="color:var(--blue); font-size:11px;"></i> <i class="fa-solid fa-clover" style="color:var(--green); font-size:11px;"></i><br>
@@ -1423,7 +1423,7 @@ var notificationsEnabled=localStorage.getItem('notificationsEnabled') !== 'false
 var maxWinners=1,winnersThisRound=[],myWinReported=false;
 var socket=null,serverDrivingBalls=false,serverDrivingTimer=null,gamePaused=false;
 var getReadyActive=false;var pendingServerBalls=[];
-var currentStake = 100; var currentRoom = '100';
+var currentStake = 10; var currentRoom = '10';
 var game={called:new Set(),current:null,recentBalls:[],autoIv:null,callCount:0,cards:[],marked:[],wonLines:[],cardNums:[],winAmount:0,totalPlayers:0,betDeducted:false,gameId:null};
 var waitGame={called:new Set(),current:null,recentBalls:[],callCount:0,autoIv:null};
 var currentRulesLang = 'en'; var currentRulesTab = 'terms';
