@@ -129,6 +129,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 .card-cell.selected::after{opacity:1;animation:btnShimmer 3s ease-in-out infinite;}
 .card-cell:active{transform:scale(0.93);}
 .card-cell.selected{background:linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);color:#fff;border-color:var(--green);box-shadow:0 0 12px rgba(16,185,129,0.6),inset 0 1px 0 rgba(255,255,255,0.2);transform:scale(1.05);font-weight:800;}
+.card-cell.taken{background:linear-gradient(135deg, #e65100 0%, #ff7b00 50%, #ff9800 100%) !important;color:#fff !important;border-color:var(--orange) !important;box-shadow:0 0 12px rgba(255,123,0,0.6),inset 0 1px 0 rgba(255,255,255,0.2) !important;cursor:not-allowed !important;}
 .card-cell.disabled{opacity:0.25;cursor:not-allowed;}
 .bottom-bar{background:rgba(26,26,54,0.8);backdrop-filter:blur(10px);padding:10px 12px;display:flex;align-items:center;gap:8px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
 .selected-info{flex:1;font-size:12px;color:var(--muted);}
@@ -609,7 +610,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 </head>
 <body>
 <div class="app">
-  <div class="screen" id="screen-auth" style="background: var(--bg); align-items: center; justify-content: center; height: 100vh;">
+  <div class="screen active" id="screen-auth" style="background: var(--bg); align-items: center; justify-content: center; height: 100vh; display: flex;">
     <div style="text-align: center; padding: 20px; width: 100%; max-width: 360px;">
       <div class="breath-logo" style="position: relative; display: inline-block; margin-bottom: 25px;">
         <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; box-shadow: 0 0 30px rgba(255,107,0,0.6);" alt="Juba Bingo Logo">
@@ -626,35 +627,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
         </div>
       </div>
 
-      <!-- Copy & Paste Input Box for Web Players -->
-      <div id="web-auth-box" style="display: none; flex-direction: column; gap: 16px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255,255,255,0.08); padding: 24px; border-radius: 24px; backdrop-filter: blur(20px); text-align: left; box-shadow: 0 15px 35px rgba(0,0,0,0.6); animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
-        <div style="text-align: center; margin-bottom: 5px;">
-          <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin: 0 0 4px 0;">Telegram Player Access</h2>
-          <p style="font-size: 11px; color: var(--muted); margin: 0; line-height: 1.4;">Enter or paste your Telegram Account ID & Name to synchronize your profile and load your game wallet instantly.</p>
-        </div>
-        
-        <div class="input-group">
-          <label style="font-size: 10px; font-weight: 800; color: var(--orange); letter-spacing: 0.7px;">TELEGRAM ACCOUNT ID</label>
-          <div class="input-wrap">
-            <input type="text" id="pasted-tg-id" class="auth-input" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;" placeholder="e.g. 5810293847">
-          </div>
-        </div>
 
-        <div class="input-group">
-          <label style="font-size: 10px; font-weight: 800; color: var(--orange); letter-spacing: 0.7px;">PLAYER FULL NAME</label>
-          <div class="input-wrap">
-            <input type="text" id="pasted-tg-name" class="auth-input" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;" placeholder="e.g. Abebe Kebede">
-          </div>
-        </div>
-
-        <button class="auth-btn" onclick="submitPastedTelegramId()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, var(--orange) 0%, #e65100 100%); color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(255,107,0,0.3); transition: all 0.2s; margin-top: 5px;">
-          <i class="fa-solid fa-right-to-bracket"></i> ENTER GAME (ግባ)
-        </button>
-
-        <div style="text-align: center; margin-top: 4px;">
-          <button onclick="prefillTestTelegramId()" style="background: none; border: none; color: var(--blue); font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: underline;">Use Demo/Test Account ID</button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -679,7 +652,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       </div>
     </div>
   </div>
-  <div class="screen active" id="screen-stake">
+  <div class="screen" id="screen-stake">
     <div class="stake-container">
       <!-- Top-left logo instead of user profile -->
       <div class="stake-top-profile" onclick="navTo('profile')" style="display: flex; align-items: center; gap: 8px;">
@@ -765,10 +738,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
           <i class="fa-solid fa-hourglass-half" style="color:var(--orange); font-size:64px; filter:drop-shadow(0 0 15px rgba(245,158,11,0.4));"></i>
         </div>
         <h2 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:10px; letter-spacing:0.5px; text-transform:uppercase;">GAME IN PROGRESS</h2>
-        <p style="font-size:13px; color:var(--muted); max-width:280px; line-height:1.5;">
+        <p style="font-size:13px; color:var(--muted); max-width:280px; line-height:1.5; margin-bottom: 18px;">
           A synchronized round is currently active. Please wait for the next countdown to buy a ticket.
           <br><span style="color:var(--orange); font-size:12px; font-weight:600; margin-top:5px; display:inline-block;">ጨዋታው በመካሄድ ላይ ነው። እባክዎ ቀጣዩን ዙር ይጠብቁ።</span>
         </p>
+        <!-- Spectator button to watch live game calling balls -->
+        <button onclick="spectateLiveGame()" style="background: linear-gradient(135deg, var(--orange) 0%, #ff8f00 100%); color:#fff; border:none; padding:12px 24px; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow: 0 4px 15px rgba(255,107,0,0.4); transition: transform 0.2s;"><i class="fa-solid fa-eye"></i> WATCH LIVE GAME (ቀጥታ ጨዋታውን ይመልከቱ)</button>
       </div>
 
       <div style="padding:5px 12px; display:flex; justify-content:flex-start;">
@@ -818,6 +793,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
   </div>
   
   <div class="screen" id="screen-game">
+    <div id="spectator-banner" style="display:none; background: linear-gradient(90deg, #d84315 0%, #ff8f00 100%); color: #fff; padding: 8px 12px; font-size: 13px; font-weight: 700; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; box-shadow: 0 4px 12px rgba(216,67,21,0.3); z-index: 50;">
+      <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
+      <span>You didn't join this game. Watching in background... (ይህን ጨዋታ አልተቀላቀሉም። በጀርባ እየተመለከቱ ነው...)</span>
+    </div>
     <div class="topbar">
       <div class="stat-box"><div class="stat-label" id="lbl-game-active">GAME ID</div><div class="stat-val yellow" id="s-game-id">—</div></div>
       <div class="stat-box"><div class="stat-label" id="lbl-win-active">WIN</div><div class="stat-val green" id="s-win-game">0</div></div>
@@ -1044,21 +1023,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
           </div>
         </div>
 
-        <!-- Manual Wallet Instructions instead of automated buttons -->
-        <div style="background:rgba(255,107,0,0.06); border:1px solid rgba(255,107,0,0.2); border-radius:12px; padding:15px; margin-top:20px; text-align:left; z-index:1; position:relative;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-            <i class="fa-solid fa-circle-info" style="color:var(--orange); font-size:16px;"></i>
-            <span style="font-size:12px; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:0.5px;" id="lbl-wal-info-title">Deposit & Withdrawal</span>
-          </div>
-          <p style="font-size:12px; color:var(--text); line-height:1.6; margin:0 0 10px 0;" id="lbl-wal-info-desc">
-            To make deposits or request withdrawals, please use our official Telegram bot commands or contact our administrator directly on Telegram.
-          </p>
-          <div style="margin-top:10px;">
-            <a href="https://t.me/one_day_82" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--orange); color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:800; cursor:pointer; text-decoration:none; transition:all 0.2s; text-align:center; box-shadow:0 4px 15px rgba(255,107,0,0.4);">
-              <i class="fa-brands fa-telegram" style="font-size:16px;"></i> <span id="lbl-wal-contact-admin">CONTACT ADMIN (አድሚን ያነጋግሩ)</span>
-            </a>
-          </div>
-        </div>
+        <!-- Deposit & Withdrawal handled in Telegram bot -->
       </div>
       
       <div class="section-title" id="lbl-wal-tx-title">Transaction History</div>
@@ -1066,7 +1031,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
     </div>
   </div>
   
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" style="display: none;">
     <button class="nav-btn active" id="nav-home" onclick="navTo('home')"><span class="nav-icon"><i class="fa-solid fa-house"></i></span><span class="nav-text" id="lbl-nav-home">HOME</span></button>
     <button class="nav-btn" id="nav-winners" onclick="navTo('winners')"><span class="nav-icon"><i class="fa-solid fa-trophy"></i></span><span class="nav-text" id="lbl-nav-winners">WINNERS</span></button>
     <button class="nav-btn" id="nav-wallet" onclick="navTo('wallet')"><span class="nav-icon"><i class="fa-solid fa-wallet"></i></span><span class="nav-text" id="lbl-nav-wallet">WALLET</span></button>
@@ -1392,8 +1357,10 @@ function submitPastedTelegramId() {
 }
 
 function prefillTestTelegramId() {
-  document.getElementById('pasted-tg-id').value = '3050692752';
-  document.getElementById('pasted-tg-name').value = 'Juba Winner';
+  var idInput = document.getElementById('pasted-tg-id');
+  if (idInput) idInput.value = '3050692752';
+  var nameInput = document.getElementById('pasted-tg-name');
+  if (nameInput) nameInput.value = 'Juba Winner';
 }
 
 function autoLoginRegister() {
@@ -1424,6 +1391,7 @@ var maxWinners=1,winnersThisRound=[],myWinReported=false;
 var socket=null,serverDrivingBalls=false,serverDrivingTimer=null,gamePaused=false;
 var getReadyActive=false;var pendingServerBalls=[];
 var currentStake = 10; var currentRoom = '10';
+var takenCartelas = {};
 var game={called:new Set(),current:null,recentBalls:[],autoIv:null,callCount:0,cards:[],marked:[],wonLines:[],cardNums:[],winAmount:0,totalPlayers:0,betDeducted:false,gameId:null};
 var waitGame={called:new Set(),current:null,recentBalls:[],callCount:0,autoIv:null};
 var currentRulesLang = 'en'; var currentRulesTab = 'terms';
@@ -1986,13 +1954,38 @@ function selectStake(stake) {
   cardDeductMap = {};
   for(var i=1;i<=400;i++){
     var el = document.getElementById('cc-'+i);
-    if(el) el.classList.remove('selected','disabled');
+    if(el) el.classList.remove('selected','disabled','taken');
   }
   setTxt('sel-count','0');
   setTxt('s-win-sel','0');
+
+  // If a game is currently running, go straight to spectator mode on screen-game
+  if (serverGameStatus === 'running' || serverGameStatus === 'celebrating') {
+    document.getElementById('spectator-banner').style.display = 'block';
+    showScreen('screen-game');
+    updatePlayersDisplay();
+    renderNumGrid();
+    renderRecentBalls();
+    renderCurrentBall();
+    renderAllCards();
+    fetchBalance();
+    return;
+  }
+
   showScreen('screen-home');
   showSelectScreen();
   fetchBalance();
+}
+
+function spectateLiveGame() {
+  if (soundOn) sfx.playClick();
+  document.getElementById('spectator-banner').style.display = 'block';
+  showScreen('screen-game');
+  updatePlayersDisplay();
+  renderNumGrid();
+  renderRecentBalls();
+  renderCurrentBall();
+  renderAllCards();
 }
 
 function backToStake() {
@@ -2568,6 +2561,13 @@ function initSocket(){
       document.getElementById('cancelled-overlay').classList.add('show');
     });
     
+    takenCartelas = {}; // Live mapping: cartela -> userId
+
+    socket.on('cartelas_update', function(data) {
+      takenCartelas = data.selectedCartelas || {};
+      updateCardGridStyling();
+    });
+
     socket.on('countdown_update', function(data){
       if(data.room && data.room !== currentRoom) return; 
       
@@ -2603,7 +2603,7 @@ function initSocket(){
       }
       
       showSelectScreen();
-      if(!timerIv) startTimer();
+      startTimer(); // Always re-align client timer with precise server time
     });
     
     socket.on('round_reset', function(data) {
@@ -2677,55 +2677,21 @@ function initSocket(){
       
       winnersThisRound = [];
       myWinReported = false;
+      getReadyActive = false; // No more extra countdown delay
+      pendingServerBalls = [];
       
       if(game.cards.length > 0){
-        showScreen('screen-game');
-        updatePlayersDisplay();
-        renderNumGrid();
-        renderRecentBalls();
-        renderCurrentBall();
-        renderAllCards();
-        
-        // Setup visual "GET READY" animated countdown
-        getReadyActive = true;
-        pendingServerBalls = [];
-        var currentBig = document.getElementById('current-big');
-        if (currentBig) {
-          currentBig.style.background = 'var(--yellow)';
-          currentBig.style.color = '#000';
-          currentBig.style.boxShadow = '0 0 20px var(--yellow)';
-        }
-        var cbnEl = document.getElementById('cb-num');
-        if (cbnEl) {
-          cbnEl.style.fontSize = '12px';
-          cbnEl.style.lineHeight = '1.2';
-          
-          var getReadyCountdown = 5;
-          cbnEl.innerHTML = 'GET<br>READY<br>(' + getReadyCountdown + ')';
-          setTxt('cb-letter', '');
-          
-          var getReadyInterval = setInterval(function() {
-            getReadyCountdown--;
-            if (getReadyCountdown > 0) {
-              cbnEl.innerHTML = 'GET<br>READY<br>(' + getReadyCountdown + ')';
-            } else {
-              clearInterval(getReadyInterval);
-            }
-          }, 1000);
-          
-          setTimeout(function(){
-            clearInterval(getReadyInterval);
-            getReadyActive = false;
-            while(pendingServerBalls.length > 0){
-              processBall(pendingServerBalls.shift());
-            }
-            markServerDriving();
-          }, 5000);
-        }
+        document.getElementById('spectator-banner').style.display = 'none';
       } else {
-        showScreen('screen-home');
-        showWaitScreen();
+        document.getElementById('spectator-banner').style.display = 'block';
       }
+      
+      showScreen('screen-game');
+      updatePlayersDisplay();
+      renderNumGrid();
+      renderRecentBalls();
+      renderCurrentBall();
+      renderAllCards();
     });
     
     socket.on('winner_found', function(data){
@@ -2934,22 +2900,24 @@ async function checkGameState(){
     setTxt('game-id-label',currentGameId||'—');
     setTxt('w-game-id',currentGameId||'—');
     if(state.called_numbers && state.called_numbers.length > 0) {
-      waitGame.called = new Set(state.called_numbers);
       game.called = new Set(state.called_numbers);
-      waitGame.current = state.called_numbers[state.called_numbers.length - 1];
-      waitGame.recentBalls = state.called_numbers.slice(-4);
-      waitGame.callCount = state.called_numbers.length;
+      game.current = state.called_numbers[state.called_numbers.length - 1];
+      game.recentBalls = state.called_numbers.slice(-4);
+      game.callCount = state.called_numbers.length;
     }
     if(state.total_players){
       game.totalPlayers=state.total_players;
       updatePlayersDisplay();
     }
-    showWaitScreen();
-    // Render the initial spectating state immediately
-    renderWaitGrid();
-    renderWaitBalls();
-    renderWaitCurrent();
-    stopWaitDraw();
+    
+    serverGameStatus = 'running';
+    document.getElementById('spectator-banner').style.display = 'block';
+    showScreen('screen-game');
+    updatePlayersDisplay();
+    renderNumGrid();
+    renderRecentBalls();
+    renderCurrentBall();
+    renderAllCards();
   }else if(state&&!state.game_running){
     timeLeft=state.time_left||60;
     currentGameId=state.game_id||generateGameId();
@@ -3081,17 +3049,45 @@ function buildGrid() {
 
 var cardDeductMap = {};
 
+function updateCardGridStyling() {
+  for (var i = 1; i <= 400; i++) {
+    var el = document.getElementById('cc-' + i);
+    if (!el) continue;
+    
+    el.classList.remove('taken', 'disabled', 'selected');
+    
+    var isTakenByOther = (takenCartelas[i] && takenCartelas[i] !== tgUserId);
+    var isSelectedByMe = selCards.has(i);
+    
+    if (isTakenByOther) {
+      el.classList.add('taken');
+    } else if (isSelectedByMe) {
+      el.classList.add('selected');
+    } else if (selCards.size >= 2) {
+      el.classList.add('disabled');
+    }
+  }
+}
+
 function toggleCard(n) {
+  if (takenCartelas[n] && takenCartelas[n] !== tgUserId) {
+    if (apiAvailable) Telegram.WebApp.showAlert('⚠️ This cartela is already taken by another player! (ይህ ካርቴላ በሌላ ተጫዋች ቀድሞ ተወስዷል!)');
+    else alert('⚠️ This cartela is already taken by another player! (ይህ ካርቴላ በሌላ ተጫዋች ቀድሞ ተወስዷል!)');
+    return;
+  }
+
   if (soundOn) sfx.playBlip();
   if (selCards.has(n)) {
     selCards.delete(n);
-    var el = document.getElementById('cc-' + n);
-    if (el) el.classList.remove('selected');
     var d = cardDeductMap[n] || {fromPlay: currentStake, fromMain: 0};
     userPlayBalance += d.fromPlay;
     userMainBalance += d.fromMain;
     delete cardDeductMap[n];
     updateBalanceDisplay();
+    
+    if (socket && socket.connected) {
+      socket.emit('toggle_cartela', { user_id: tgUserId, cartela_num: n, selected: false });
+    }
   } else {
     if (selCards.size >= 2) return;
     var totalAvail = userPlayBalance + userMainBalance;
@@ -3106,8 +3102,6 @@ function toggleCard(n) {
       return;
     }
     selCards.add(n);
-    var el = document.getElementById('cc-' + n);
-    if (el) el.classList.add('selected');
     var fromPlay = 0, fromMain = 0;
     if (userPlayBalance >= currentStake) {
       fromPlay = currentStake;
@@ -3121,25 +3115,13 @@ function toggleCard(n) {
     }
     cardDeductMap[n] = {fromPlay: fromPlay, fromMain: fromMain};
     updateBalanceDisplay();
+
+    if (socket && socket.connected) {
+      socket.emit('toggle_cartela', { user_id: tgUserId, cartela_num: n, selected: true });
+    }
   }
   
-  if (selCards.size >= 2) {
-    for (var i = 1; i <= 400; i++) {
-      if (!selCards.has(i)) {
-        var el = document.getElementById('cc-' + i);
-        if (el) el.classList.add('disabled');
-      }
-    }
-  } else {
-    for (var i = 1; i <= 400; i++) {
-      var el = document.getElementById('cc-' + i);
-      if (el) el.classList.remove('disabled');
-    }
-    selCards.forEach(function(s) {
-      var el = document.getElementById('cc-' + s);
-      if (el) el.classList.add('selected');
-    });
-  }
+  updateCardGridStyling();
   
   setTxt('sel-count', selCards.size);
   var winAmt = Math.round(selCards.size * currentStake * 0.8);
@@ -3740,6 +3722,9 @@ function newRound(){
 
   hasBoughtTicket = false;
   serverGameStatus = 'waiting';
+  var specBanner = document.getElementById('spectator-banner');
+  if (specBanner) specBanner.style.display = 'none';
+  
   var runOverlay = document.getElementById('running-overlay');
   if (runOverlay) {
     runOverlay.style.display = 'none';
@@ -3754,13 +3739,14 @@ function newRound(){
   if (buyBtn) buyBtn.style.display = 'none';
 
   selCards=new Set();
+  takenCartelas={};
   game.betDeducted=false;
   cardDeductMap={};
   winnersThisRound=[];
   myWinReported=false;
   for(var i=1;i<=400;i++){
     var el=document.getElementById('cc-'+i);
-    if(el)el.classList.remove('selected','disabled');
+    if(el)el.classList.remove('selected','disabled','taken');
   }
   setTxt('sel-count','0');
   setTxt('s-win-sel','0');

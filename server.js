@@ -517,7 +517,8 @@ const globalGame = {
   maxWinners: 1,
   ballTimer: null,
   totalPot: 0,
-  streaksUpdated: false
+  streaksUpdated: false,
+  selectedCartelas: {} // cartela_num -> userId mapping for real-time lobby synchronization
 };
 
 // Start countdown logic for the global game
@@ -556,11 +557,17 @@ function tryStartGame(game) {
     game.status = 'running';
     game.calledNumbers = [];
     game.winners = [];
+    game.selectedCartelas = {}; // Clear selected cartelas for the running game
 
     io.to(game.roomId).emit('game_started', {
       room: game.roomId,
       game_id: game.gameId,
       total_players: totalCardsCount
+    });
+
+    // Broadcast empty selections to sync up clients
+    io.to(game.roomId).emit('cartelas_update', {
+      selectedCartelas: game.selectedCartelas
     });
 
     // Start drawing balls
@@ -593,21 +600,19 @@ function startBallDrawing(game) {
 
   let index = 0;
   
-  // Wait 5 seconds (GET READY phase) before first ball
-  setTimeout(() => {
-    if (game.status !== 'running') return;
-    
+  // Start drawing first ball instantly - no 5-second extra countdown
+  if (game.status === 'running') {
     drawBall();
-    
-    game.ballTimer = setInterval(() => {
-      if (game.status !== 'running') {
-        clearInterval(game.ballTimer);
-        game.ballTimer = null;
-        return;
-      }
-      drawBall();
-    }, 2300);
-  }, 5000);
+  }
+  
+  game.ballTimer = setInterval(() => {
+    if (game.status !== 'running') {
+      clearInterval(game.ballTimer);
+      game.ballTimer = null;
+      return;
+    }
+    drawBall();
+  }, 2300);
 
   function drawBall() {
     if (index >= 75 || game.status !== 'running') {
@@ -662,12 +667,18 @@ function endGame(game) {
   game.winners = [];
   game.streaksUpdated = false; // Reset flag for next game
   game.totalPot = 0;
+  game.selectedCartelas = {}; // Clear all selected cartelas
   
   // Broadcast the new game/lobby reset to all connected sockets
   io.to(game.roomId).emit('round_reset', {
     room: game.roomId,
     game_id: game.gameId,
     time_left: game.timeLeft
+  });
+
+  // Sync cleared selected cartelas
+  io.to(game.roomId).emit('cartelas_update', {
+    selectedCartelas: game.selectedCartelas
   });
   
   startGameCountdown(game);
@@ -689,6 +700,11 @@ io.on('connection', (socket) => {
     currentRoom = globalGame.roomId;
     socket.join(currentRoom);
     
+    if (data && data.user_id) {
+      socket.userId = data.user_id;
+      currentUserId = data.user_id;
+    }
+    
     // Send initial game state
     const playersList = Object.values(globalGame.players);
     let totalCardsCount = 0;
@@ -699,12 +715,18 @@ io.on('connection', (socket) => {
     socket.emit('countdown_update', {
       room: currentRoom,
       game_id: globalGame.gameId,
-      time_left: globalGame.timeLeft
+      time_left: globalGame.timeLeft,
+      status: globalGame.status
     });
     
     socket.emit('game_state_update', {
       room: currentRoom,
       total_players: totalCardsCount
+    });
+
+    // Sync selected cartelas for the joining user
+    socket.emit('cartelas_update', {
+      selectedCartelas: globalGame.selectedCartelas || {}
     });
   });
 
@@ -719,9 +741,37 @@ io.on('connection', (socket) => {
       socket.emit('countdown_update', {
         room: globalGame.roomId,
         game_id: globalGame.gameId,
-        time_left: globalGame.timeLeft
+        time_left: globalGame.timeLeft,
+        status: globalGame.status
       });
     }
+  });
+
+  socket.on('toggle_cartela', (data) => {
+    const { user_id, cartela_num, selected } = data;
+    if (globalGame.status !== 'waiting') return;
+
+    if (!globalGame.selectedCartelas) {
+      globalGame.selectedCartelas = {};
+    }
+
+    if (selected) {
+      // Check if already taken by someone else
+      if (globalGame.selectedCartelas[cartela_num] && globalGame.selectedCartelas[cartela_num] !== user_id) {
+        socket.emit('cartelas_update', { selectedCartelas: globalGame.selectedCartelas });
+        return;
+      }
+      globalGame.selectedCartelas[cartela_num] = user_id;
+    } else {
+      if (globalGame.selectedCartelas[cartela_num] === user_id) {
+        delete globalGame.selectedCartelas[cartela_num];
+      }
+    }
+
+    // Broadcast cartela selection status to all users
+    io.to(globalGame.roomId).emit('cartelas_update', {
+      selectedCartelas: globalGame.selectedCartelas
+    });
   });
 
   socket.on('player_ready', (data) => {
@@ -729,6 +779,7 @@ io.on('connection', (socket) => {
     if (globalGame.status !== 'waiting') return; // Cannot join running game
     
     currentUserId = user_id;
+    socket.userId = user_id;
     
     // Store player details and generate their cards deterministically
     const cardGrids = cards.map(cId => generateCardDeterministic(cId));
@@ -755,6 +806,15 @@ io.on('connection', (socket) => {
       total_players: totalCardsCount,
       total_pot: globalGame.totalPot
     });
+
+    // INSTANT START LOGIC: If all active connected sockets have chosen cards and joined players
+    const connectedSockets = io.sockets.adapter.rooms.get(globalGame.roomId);
+    const connectedCount = connectedSockets ? connectedSockets.size : 0;
+    const readyCount = Object.keys(globalGame.players).length;
+
+    if (connectedCount >= 1 && readyCount >= connectedCount) {
+      tryStartGame(globalGame);
+    }
   });
 
   socket.on('declare_winner', async (data) => {
@@ -814,7 +874,21 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     // We keep players registered in room.players so they can win even if they disconnect temporarily.
-    // They will be cleared when the game resets.
+    // Clean up their selected cartelas in the lobby to make them available for others
+    if (socket.userId && globalGame.selectedCartelas) {
+      let updated = false;
+      for (const [cartela, uId] of Object.entries(globalGame.selectedCartelas)) {
+        if (uId === socket.userId) {
+          delete globalGame.selectedCartelas[cartela];
+          updated = true;
+        }
+      }
+      if (updated) {
+        io.to(globalGame.roomId).emit('cartelas_update', {
+          selectedCartelas: globalGame.selectedCartelas
+        });
+      }
+    }
   });
 });
 
