@@ -16,7 +16,7 @@
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
-  --bg:#070713;--bg2:rgba(30, 30, 60, 0.65);--bg3:#04040a;
+  --bg:#1a1b26;--bg2:rgba(38, 41, 58, 0.75);--bg3:#12131c;
   --orange:#ff6b00;--green:#00e676;--blue:#00d4ff;
   --purple:#b388ff;--pink:#ff4081;--yellow:#ffd600;
   --text:#f8fafc;--muted:rgba(248, 250, 252, 0.6);
@@ -162,33 +162,27 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 .rball .rn{font-size:8px;line-height:1;}
 .current-box{background:var(--glass-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:10px;padding:4px 6px;text-align:center;border:1px solid var(--glass-border);box-shadow:0 4px 15px rgba(0,0,0,0.3);}
 .current-label{font-size:8px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:1px;font-weight:800;}
-.current-ball-big{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;font-weight:800;margin:auto;border:2px solid rgba(255,255,255,0.15);box-shadow:0 0 20px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.3);transition:all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
-.cbl{font-size:8px;opacity:.9;line-height:1;}
-.cbn{font-size:20px;line-height:1;}
-.ball-pop{animation:ballPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
-@keyframes ballPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-.controls-row{display:flex;gap:3px;align-items:center;background:var(--glass-bg);backdrop-filter:blur(16px);border-radius:8px;padding:4px;border:1px solid var(--glass-border);}
-.ctrl-item{display:flex;align-items:center;gap:3px;flex:1;}
-.ctrl-lbl{font-size:9px;font-weight:700;letter-spacing:0.3px;}
-.ctrl-lbl.green{color:var(--green);text-shadow:0 0 5px rgba(0, 230, 118, 0.4);}
-.ctrl-lbl.blue{color:var(--blue);text-shadow:0 0 5px rgba(0, 212, 255, 0.4);}
-.toggle{width:28px;height:16px;border-radius:8px;background:rgba(255,255,255,0.2);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
-.toggle.on{background:var(--green);}
-.toggle.blue-on{background:var(--blue);}
-.toggle.locked{pointer-events:none;opacity:0.85;}
-.toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .2s;}
-.toggle.on::after,.toggle.blue-on::after{left:14px;}
-.card-box{background:var(--bg2);border-radius:8px;padding:3px 4px;}
-.card-id-lbl{text-align:center;font-size:7.5px;color:var(--muted);letter-spacing:0.5px;margin-bottom:1px;}
-.card-hdr{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-bottom:2px;}
-.card-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-bottom:1px;}
-.ch{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;margin:auto;}
-.ch.B{background:#00b0ff;}.ch.I{background:#d500f9;}.ch.N{background:#ff4081;}.ch.G{background:#ffd600;color:#000;}.ch.O{background:#ff7b00;color:#000;}
-@keyframes cardGlow{0%{box-shadow:0 0 4px rgba(0,230,118,0.4);}50%{box-shadow:0 0 12px rgba(0,230,118,0.9),0 0 20px rgba(0,230,118,0.4);}100%{box-shadow:0 0 4px rgba(0,230,118,0.4);}}
-.cc{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;cursor:pointer;background:var(--bg3);color:var(--text);border:1px solid rgba(255,255,255,0.06);transition:all .2s;}
-.cc.marked{background:var(--green);color:#000;animation:cardGlow 1.2s ease-in-out;}
-.cc.free{background:var(--purple);color:#fff;}
-.cc.win-cell{background:var(--yellow);color:#000;box-shadow:0 0 6px var(--yellow);}
+.current-ball-big{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;font-weight:800;margin:auto;border:2px solid rgba(255,255,255,0.4);box-shadow:0 8px 25px rgba(0,0,0,0.7), inset 0 3px 6px rgba(255,255,255,0.6), inset 0 -4px 8px rgba(0,0,0,0.6);transition:all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);position:relative;overflow:hidden;}
+.current-ball-big::before{content:'';position:absolute;top:5%;left:15%;width:40%;height:30%;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 80%);pointer-events:none;}
+.current-ball-big.B{background:radial-gradient(circle at 35% 25%, #38bdf8 0%, #0284c7 60%, #0369a1 100%);color:#fff;}
+.current-ball-big.I{background:radial-gradient(circle at 35% 25%, #e879f9 0%, #c084fc 60%, #7e22ce 100%);color:#fff;}
+.current-ball-big.N{background:radial-gradient(circle at 35% 25%, #f472b6 0%, #e11d48 60%, #881337 100%);color:#fff;}
+.current-ball-big.G{background:radial-gradient(circle at 35% 25%, #fde047 0%, #eab308 60%, #854d0e 100%);color:#000;}
+.current-ball-big.O{background:radial-gradient(circle at 35% 25%, #fb923c 0%, #ea580c 60%, #9a3412 100%);color:#fff;}
+.cbl{font-size:9px;opacity:.95;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.4);}
+.cbn{font-size:22px;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.5);}
+
+.rball{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7.5px;font-weight:700;flex-direction:column;box-shadow:inset 0 1px 2px rgba(255,255,255,0.5), 0 3px 6px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);}
+.rball.B{background:radial-gradient(circle at 35% 25%, #38bdf8 0%, #0284c7 100%);color:#fff;}
+.rball.I{background:radial-gradient(circle at 35% 25%, #e879f9 0%, #7e22ce 100%);color:#fff;}
+.rball.N{background:radial-gradient(circle at 35% 25%, #f472b6 0%, #881337 100%);color:#fff;}
+.rball.G{background:radial-gradient(circle at 35% 25%, #fde047 0%, #854d0e 100%);color:#000;}
+.rball.O{background:radial-gradient(circle at 35% 25%, #fb923c 0%, #9a3412 100%);color:#fff;}
+
+.cc{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;cursor:pointer;background:linear-gradient(180deg, rgba(35,35,65,0.8) 0%, rgba(15,15,35,0.95) 100%);color:var(--text);border:1px solid rgba(255,255,255,0.12);box-shadow:inset 0 1px 1px rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.4);transition:all .2s;}
+.cc.marked{background:linear-gradient(180deg, #34d399 0%, #10b981 50%, #059669 100%);color:#fff;border-color:#34d399;box-shadow:0 3px 0 #047857, 0 4px 10px rgba(16,185,129,0.6), inset 0 1px 2px rgba(255,255,255,0.5);text-shadow:0 1px 2px rgba(0,0,0,0.5);animation:cardGlow 1.2s ease-in-out;}
+.cc.free{background:linear-gradient(180deg, #c084fc 0%, #9333ea 100%);color:#fff;box-shadow:inset 0 1px 2px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.4);}
+.cc.win-cell{background:linear-gradient(180deg, #fde047 0%, #eab308 100%);color:#000;box-shadow:0 0 12px var(--yellow), inset 0 1px 2px rgba(255,255,255,0.8);}
 .no-card{background:var(--bg2);border-radius:8px;padding:8px;display:flex;align-items:center;justify-content:center;opacity:.4;min-height:30px;}
 .winner-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:8px 12px 12px;text-align:center;background:radial-gradient(ellipse at center top, rgba(245,158,11,0.08) 0%, var(--bg) 60%);overflow-y:auto;position:relative;}
 .winner-screen::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f59e0b' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none;z-index:0;}
@@ -515,15 +509,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 }
 
 .filter-tabs{display:flex;gap:6px;margin-bottom:10px;}
-.ftab{flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;text-align:center;}
-.ftab.active{background:var(--orange);color:#000;border-color:var(--orange);}
-.filter-tabs2{display:flex;gap:4px;margin-bottom:10px;}
-.ftab2{flex:1;padding:6px 2px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;text-align:center;}
-.ftab2.active{background:var(--blue);color:#fff;border-color:var(--blue);}
-.rank-card{background:var(--bg2);border-radius:10px;overflow:hidden;margin-bottom:8px;border:1px solid rgba(255,255,255,0.04);}
-.rank-head{display:grid;grid-template-columns:40px 1fr 80px;padding:8px 12px;background:var(--bg3);}
-.rank-head span{font-size:9px;font-weight:700;color:var(--yellow);text-transform:uppercase;}
-.rank-row{display:grid;grid-template-columns:40px 1fr 80px;padding:10px 12px;border-top:1px solid rgba(255,255,255,0.05);align-items:center;animation:rankRowSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;}
+.ftab{flex:1;padding:9px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(35,35,65,0.7) 0%, rgba(15,15,35,0.9) 100%);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;text-align:center;box-shadow:inset 0 1px 1px rgba(255,255,255,0.15), 0 3px 6px rgba(0,0,0,0.4);transition:all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+.ftab:active{transform:translateY(2px);box-shadow:0 1px 3px rgba(0,0,0,0.5);}
+.ftab.active{background:linear-gradient(180deg, #ff9800 0%, #ff6b00 50%, #e65100 100%);color:#fff;border-color:#ff9800;box-shadow:0 4px 0 #b23c00, 0 6px 15px rgba(255,107,0,0.5), inset 0 2px 2px rgba(255,255,255,0.4);text-shadow:0 1px 2px rgba(0,0,0,0.5);}
+
+.filter-tabs2{display:flex;gap:5px;margin-bottom:10px;}
+.ftab2{flex:1;padding:7px 3px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:linear-gradient(180deg, rgba(30,30,55,0.7) 0%, rgba(15,15,30,0.9) 100%);color:var(--muted);font-size:10.5px;font-weight:700;cursor:pointer;text-align:center;box-shadow:inset 0 1px 1px rgba(255,255,255,0.12), 0 2px 5px rgba(0,0,0,0.4);transition:all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);display:flex;align-items:center;justify-content:center;gap:3px;}
+.ftab2:active{transform:translateY(2px);}
+.ftab2.active{background:linear-gradient(180deg, #38bdf8 0%, #00d4ff 50%, #0284c7 100%);color:#fff;border-color:#38bdf8;box-shadow:0 3px 0 #0369a1, 0 5px 12px rgba(0,212,255,0.5), inset 0 2px 2px rgba(255,255,255,0.5);text-shadow:0 1px 2px rgba(0,0,0,0.5);}
+
+.rank-card{background:linear-gradient(180deg, rgba(25,25,50,0.9) 0%, rgba(12,12,30,0.95) 100%);border-radius:14px;overflow:hidden;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1);box-shadow:inset 0 1px 1px rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.5);}
+.rank-head{display:grid;grid-template-columns:44px 1fr 90px;padding:10px 14px;background:linear-gradient(180deg, rgba(35,35,70,0.8) 0%, rgba(20,20,45,0.9) 100%);border-bottom:1px solid rgba(255,255,255,0.08);}
+.rank-head span{font-size:10px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:0.5px;}
+.rank-row{display:grid;grid-template-columns:44px 1fr 90px;padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);align-items:center;animation:rankRowSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;}
 @keyframes rankRowSlideIn {
   from {
     opacity: 0;
@@ -534,13 +532,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
     transform: translateX(0);
   }
 }
-.rank-num{font-size:14px;font-weight:800;}
-.rank-num.gold{color:var(--yellow);}
-.rank-num.silver{color:#aaa;}
-.rank-num.bronze{color:#cd7f32;}
+.rank-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:rgba(255,255,255,0.08);color:var(--muted);box-shadow:inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.4);}
+.rank-num.gold{background:linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #b45309 100%);color:#000;box-shadow:0 4px 10px rgba(245, 158, 11, 0.6), inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.4);text-shadow:0 1px 0 rgba(255,255,255,0.5);}
+.rank-num.silver{background:linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #64748b 100%);color:#000;box-shadow:0 4px 10px rgba(203, 213, 225, 0.5), inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.4);}
+.rank-num.bronze{background:linear-gradient(135deg, #fed7aa 0%, #d97706 50%, #78350f 100%);color:#fff;box-shadow:0 4px 10px rgba(217, 119, 6, 0.5), inset 0 1px 2px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.5);}
 .rank-name{font-size:13px;font-weight:600;}
 .rank-val{font-size:12px;font-weight:700;color:var(--green);text-align:right;}
-.my-rank-box{background:rgba(255,123,0,0.15);border:1px solid var(--orange);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.my-rank-box{background:linear-gradient(135deg, rgba(255,107,0,0.2) 0%, rgba(255,165,0,0.1) 100%);border:1px solid rgba(255,107,0,0.5);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 1px rgba(255,255,255,0.2), 0 6px 16px rgba(255,107,0,0.2);}
 .my-rank-box .mr-label{font-size:11px;color:var(--muted);}
 .my-rank-box .mr-val{font-size:16px;font-weight:800;color:var(--orange);}
 .wallet-bal-box{background:var(--bg2);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;border:1px solid rgba(255,255,255,0.04);}
@@ -610,27 +608,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 </head>
 <body>
 <div class="app">
-  <div class="screen active" id="screen-auth" style="background: var(--bg); align-items: center; justify-content: center; height: 100vh; display: flex;">
-    <div style="text-align: center; padding: 20px; width: 100%; max-width: 360px;">
-      <div class="breath-logo" style="position: relative; display: inline-block; margin-bottom: 25px;">
-        <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; box-shadow: 0 0 30px rgba(255,107,0,0.6);" alt="Juba Bingo Logo">
-        <div style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 2px dashed var(--orange); animation: rotate 15s linear infinite; opacity: 0.5;"></div>
-      </div>
-      <div style="color: var(--orange); font-size: 32px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 15px rgba(255,107,0,0.4); margin-bottom: 5px;">JUBA BINGO</div>
-      <div style="color: var(--text); font-size: 14px; font-weight: 700; margin-bottom: 25px; opacity: 0.8; letter-spacing: 0.5px;">TELEGRAM MINI APP</div>
-      
-      <!-- Premium Spinner (Default state while checking) -->
-      <div id="auth-spinner-container" style="display: flex; flex-direction: column; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 22px 30px; border-radius: 20px; backdrop-filter: blur(10px); margin-bottom: 15px;">
-        <div class="spinner-modern" style="width: 28px; height: 28px; border: 3px solid rgba(255,107,0,0.15); border-top-color: var(--orange); border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
-        <div style="font-size: 13px; color: var(--muted); font-weight: 600; line-height: 1.5;" id="splash-loading-text">
-          Loading...
-        </div>
-      </div>
-
-
-    </div>
-  </div>
-
   <!-- Create Password Screen for Telegram Users on First Login -->
   <div class="screen" id="screen-create-password" style="background:var(--bg);">
     <div class="auth-container">
@@ -652,21 +629,20 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       </div>
     </div>
   </div>
-  <div class="screen" id="screen-stake">
+
+  <div class="screen active" id="screen-stake">
     <div class="stake-container">
-      <!-- Top-left logo instead of user profile -->
-      <div class="stake-top-profile" onclick="navTo('profile')" style="display: flex; align-items: center; gap: 8px;">
+      <!-- Hidden top profile & rules bar per request -->
+      <div class="stake-top-profile" onclick="navTo('profile')" style="display: none;">
         <img src="https://i.ibb.co/Y4dwW1Yq/x.jpg" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--orange); object-fit: cover;" alt="Juba Bingo Logo">
         <div class="stake-top-info">
           <div class="stake-top-title" id="stake-top-title" style="font-weight: 800; color: #fff; font-size: 14px;">JUBA BINGO</div>
         </div>
       </div>
       
-      <!-- Existing Rules Button Untouched -->
-      <button class="stake-rules-btn" onclick="openRules()"><i class="fa-solid fa-scroll" style="margin-right: 4px;"></i> <span id="stake-rules-btn-text">RULES</span></button>
+      <button class="stake-rules-btn" onclick="openRules()" style="display: none;"><i class="fa-solid fa-scroll" style="margin-right: 4px;"></i> <span id="stake-rules-btn-text">RULES</span></button>
       
-      <!-- Center Profile Section shown for Mini App -->
-      <div class="stake-profile-top">
+      <div class="stake-profile-top" style="display: none;">
         <div class="stake-avatar-wrap">
           <img id="stake-avatar-img" src="" class="stake-avatar-circle" style="display:none;">
           <div id="stake-avatar-letter" class="stake-avatar-letter">?</div>
@@ -715,23 +691,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="stat-box"><div class="stat-label" id="lbl-time-home">TIME LEFT</div><div class="stat-val yellow" id="s-time">60s</div></div>
     </div>
     <div id="select-area" style="position: relative; display: flex; flex-direction: column;">
-      <!-- Glassmorphic bought-overlay for ticket locking -->
-      <div id="bought-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(10, 25, 41, 0.9); backdrop-filter:blur(8px); display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; z-index:100; border-radius:12px;">
-        <div style="background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%); width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 20px;">
-          <i class="fa-solid fa-circle-check" style="color:var(--green); font-size:64px; filter:drop-shadow(0 0 15px rgba(16,185,129,0.5));"></i>
-        </div>
-        <h2 style="font-size:20px; font-weight:800; color:#fff; margin-bottom:10px; letter-spacing:0.5px;">TICKET PURCHASED!</h2>
-        <p style="font-size:14px; color:var(--muted); max-width:280px; line-height:1.5; margin-bottom: 20px;">
-          Your cards are locked in. The synchronized game is starting soon!
-          <br><span style="color:var(--orange); font-size:12px; font-weight:600;">ካርቴላዎ ተገዝቷል። ጨዋታው በቅርቡ ይጀምራል!</span>
-        </p>
-        <div class="stat-box" style="background:#132f4f; border:1px solid #1e4976; padding:12px 24px; border-radius:12px; min-width:180px;">
-          <div style="font-size:10px; color:#4a9eff; letter-spacing:1px; margin-bottom:4px;">GAME ID</div>
-          <div style="font-size:18px; font-weight:800; color:#fff;" id="bought-game-id">—</div>
-        </div>
-        <p id="bought-countdown-text" style="font-size:13px; color:#ffd700; font-weight:700; margin-top:20px;"></p>
-      </div>
-
       <!-- Active running-overlay to block betting during game -->
       <div id="running-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(10, 25, 41, 0.95); backdrop-filter:blur(8px); display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; z-index:100; border-radius:12px;">
         <div style="background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%); width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 20px;">
@@ -753,11 +712,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="game-id-bar">Game ID: <span id="game-id-label">—</span></div>
       <div class="select-info" id="home-select-info">YOU CAN SELECT UP TO <span>2 CARDS</span></div>
       <div class="cards-scroll"><div class="cards-grid" id="cards-grid"></div></div>
-      <div class="bottom-bar" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 16px;">
-        <div class="selected-info" style="margin-bottom: 4px;">Selected: <strong id="sel-count">0</strong> / 2</div>
-        <button id="buy-ticket-btn" onclick="buyTicket()" class="btn btn-primary btn-breath" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-          <i class="fa-solid fa-ticket"></i> CONFIRM & BUY TICKET (ካርቴላ ይግዙ)
-        </button>
+      <div class="bottom-bar" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 16px; width: 100%;">
+        <div id="card-status-bar" style="width: 100%;">
+          <div style="font-size:12px; color:var(--muted); text-align:center; padding:6px; font-weight:700;">
+            <i class="fa-solid fa-hand-pointer" style="color:var(--orange); margin-right:6px;"></i>Tap any card number (1-400) to instantly buy your ticket
+          </div>
+        </div>
       </div>
     </div>
     <div id="wait-area" style="display:none;flex:1;flex-direction:column;">
@@ -967,9 +927,30 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       <div class="stat-box"><div class="stat-label" id="lbl-total-leader">TOTAL</div><div class="stat-val yellow" id="tw-total">—</div></div>
     </div>
     <div class="page-scroll">
-      <div class="filter-tabs"><button class="ftab active" id="tab-week" onclick="setWeek('week')">This Week</button><button class="ftab" id="tab-month" onclick="setWeek('month')">This Month</button></div>
-      <div class="my-rank-box" style="margin-top: 10px;"><div><div class="mr-label" id="lbl-lead-your-rank">Your Rank</div><div class="mr-val" id="my-rank">#—</div></div><div><div class="mr-label" id="my-rank-val-label">Value</div><div class="mr-val" id="my-rank-val">—</div></div></div>
-      <div class="rank-card"><div class="rank-head" id="lbl-lead-head"><span>#</span><span>NAME</span><span style="text-align:right;">TIMES</span></div><div id="rank-rows"><div class="empty-row">Loading...</div></div></div>
+      <div class="filter-tabs">
+        <button class="ftab active" id="tab-week" onclick="setWeek('week')">This Week</button>
+        <button class="ftab" id="tab-month" onclick="setWeek('month')">This Month</button>
+      </div>
+      <div class="filter-tabs2" style="margin-bottom: 10px;">
+        <button class="ftab2 active" id="tab-games" onclick="setCategory('games')"><i class="fa-solid fa-gamepad" style="margin-right:2px;"></i> Games</button>
+        <button class="ftab2" id="tab-wins" onclick="setCategory('wins')"><i class="fa-solid fa-trophy" style="margin-right:2px;"></i> Won</button>
+        <button class="ftab2" id="tab-deposit" onclick="setCategory('deposit')"><i class="fa-solid fa-wallet" style="margin-right:2px;"></i> Balance</button>
+        <button class="ftab2" id="tab-invite" onclick="setCategory('invite')"><i class="fa-solid fa-user-plus" style="margin-right:2px;"></i> Invites</button>
+      </div>
+      <div class="my-rank-box" style="margin-top: 6px;">
+        <div>
+          <div class="mr-label" id="lbl-lead-your-rank">Your Rank</div>
+          <div class="mr-val" id="my-rank">#—</div>
+        </div>
+        <div>
+          <div class="mr-label" id="my-rank-val-label">Games Played</div>
+          <div class="mr-val" id="my-rank-val">—</div>
+        </div>
+      </div>
+      <div class="rank-card">
+        <div class="rank-head" id="lbl-lead-head"><span>#</span><span>NAME</span><span style="text-align:right;">GAMES</span></div>
+        <div id="rank-rows"><div class="empty-row">Loading rankings...</div></div>
+      </div>
     </div>
   </div>
   
@@ -1365,14 +1346,7 @@ function prefillTestTelegramId() {
 
 function autoLoginRegister() {
   initTelegram();
-  if (tgUserId) {
-    appInit();
-  } else {
-    var spinContainer = document.getElementById('auth-spinner-container');
-    if (spinContainer) spinContainer.style.display = 'none';
-    var authBox = document.getElementById('web-auth-box');
-    if (authBox) authBox.style.display = 'flex';
-  }
+  appInit();
 }
 
 var API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
@@ -1994,44 +1968,15 @@ function backToStake() {
 }
 
 function updateStakeProfile() {
-  // Always display center profile as we are strictly a Telegram mini app
   var centerProfile = document.querySelector('.stake-profile-top');
   var centerLogoImg = document.getElementById('stake-center-logo-img');
   var centerLogoTitle = document.getElementById('stake-center-logo-title');
   var centerLogoSub = document.getElementById('stake-center-logo-sub');
   
-  if (centerProfile) centerProfile.style.display = 'flex';
-  if (centerLogoImg) centerLogoImg.style.display = 'none';
-  if (centerLogoTitle) centerLogoTitle.style.display = 'none';
-  if (centerLogoSub) centerLogoSub.style.display = 'none';
-
-  var imgEl = document.getElementById('stake-avatar-img');
-  var letterEl = document.getElementById('stake-avatar-letter');
-  var nameEl = document.getElementById('stake-username');
-  var topTitleEl = document.getElementById('stake-top-title');
-
-  var nameStr = tgUser ? (tgUser.first_name || 'Player') : 'Player';
-  var idStr = tgUserId ? (tgUserId.startsWith('@') ? tgUserId : '@' + tgUserId) : '@';
-
-  if (topTitleEl) {
-    topTitleEl.textContent = nameStr.toUpperCase();
-  }
-
-  if (imgEl && letterEl && nameEl) {
-    if (tgUser && tgUser.photo_url) {
-      imgEl.src = tgUser.photo_url;
-      imgEl.style.display = 'block';
-      letterEl.style.display = 'none';
-    } else {
-      var initial = nameStr.charAt(0).toUpperCase();
-      letterEl.textContent = initial;
-      imgEl.style.display = 'none';
-      letterEl.style.display = 'flex';
-    }
-
-    nameEl.innerHTML = nameStr + '<span style="display:block; font-size:12px; color:var(--muted); font-weight:500; margin-top:2px;">ID: ' + idStr + '</span>';
-    nameEl.style.display = 'block';
-  }
+  if (centerProfile) centerProfile.style.display = 'none';
+  if (centerLogoImg) centerLogoImg.style.display = 'block';
+  if (centerLogoTitle) centerLogoTitle.style.display = 'block';
+  if (centerLogoSub) centerLogoSub.style.display = 'block';
 }
 
 
@@ -2195,7 +2140,7 @@ function doLogout() {
   var authBox = document.getElementById('web-auth-box');
   if (authBox) authBox.style.display = 'flex';
   
-  showScreen('screen-auth');
+  showScreen('screen-stake');
 }
 
 function copyUserId() {
@@ -2578,28 +2523,11 @@ function initSocket(){
       
       // Manage overlay views dynamically based on game status
       var runOverlay = document.getElementById('running-overlay');
-      var bOverlay = document.getElementById('bought-overlay');
-      var buyBtn = document.getElementById('buy-ticket-btn');
       
       if (serverGameStatus === 'running' || serverGameStatus === 'celebrating') {
         if (runOverlay) runOverlay.style.display = 'flex';
-        if (bOverlay) bOverlay.style.display = 'none';
-        if (buyBtn) buyBtn.style.display = 'none';
       } else {
         if (runOverlay) runOverlay.style.display = 'none';
-        
-        if (hasBoughtTicket) {
-          if (bOverlay) bOverlay.style.display = 'flex';
-          if (buyBtn) buyBtn.style.display = 'none';
-          var bcEl = document.getElementById('bought-countdown-text');
-          if (bcEl) bcEl.textContent = 'Game starts in ' + timeLeft + 's...';
-        } else {
-          if (bOverlay) bOverlay.style.display = 'none';
-          if (buyBtn) {
-            if (selCards.size >= 1) buyBtn.style.display = 'flex';
-            else buyBtn.style.display = 'none';
-          }
-        }
       }
       
       showSelectScreen();
@@ -2643,11 +2571,9 @@ function initSocket(){
       serverGameStatus = 'running';
       currentGameId = data.game_id;
       
-      // Hide running and bought overlays
+      // Hide running overlay
       var runOverlay = document.getElementById('running-overlay');
       if (runOverlay) runOverlay.style.display = 'none';
-      var bOverlay = document.getElementById('bought-overlay');
-      if (bOverlay) bOverlay.style.display = 'none';
       
       if(data.total_players){
         game.totalPlayers = data.total_players;
@@ -2793,7 +2719,7 @@ function updateUserInfo(){
 
 function navTo(tab){
   if (!tgUserId) {
-    showScreen('screen-auth');
+    showScreen('screen-stake');
     return;
   }
   if (soundOn) sfx.playClick();
@@ -2861,8 +2787,45 @@ async function loadProfile(){
 }
 
 function setWeek(p){if(soundOn) sfx.playClick(); currentPeriod=p;document.getElementById('tab-week').classList.toggle('active',p==='week');document.getElementById('tab-month').classList.toggle('active',p==='month');loadLeaderboard();}
-function setCategory(c){if(soundOn) sfx.playClick(); currentCategory=c;['deposit','invite','games'].forEach(function(x){document.getElementById('tab-'+x).classList.toggle('active',x===c);});loadLeaderboard();}
-async function loadLeaderboard(){updateBalanceDisplay();var winners=await fetchTopWinners(currentPeriod,currentCategory);var myRank=await fetchMyRank(currentPeriod,currentCategory);var rankRows=document.getElementById('rank-rows');if(!winners.length){rankRows.innerHTML='<div class="empty-row">No data yet</div>';}else{rankRows.innerHTML=winners.slice(0,30).map(function(w,i){var nc=i===0?'rank-num gold':i===1?'rank-num silver':i===2?'rank-num bronze':'rank-num';return '<div class="rank-row" style="animation-delay: ' + (i * 30) + 'ms;"><span class="'+nc+'">'+(i+1)+'</span><span class="rank-name">'+w.name+'</span><span class="rank-val">'+w.value+'</span></div>';}).join('');}if(myRank){setTxt('my-rank','#'+(myRank.rank||'—'));setTxt('my-rank-val',myRank.value||'—');}else{setTxt('my-rank','#—');setTxt('my-rank-val','—');}var labels={deposit:'Times Deposited',invite:'Invitations',games:'Games Played'};setTxt('my-rank-val-label',labels[currentCategory]||'Value');}
+function setCategory(c){if(soundOn) sfx.playClick(); currentCategory=c;['games','wins','deposit','invite'].forEach(function(x){var el=document.getElementById('tab-'+x);if(el)el.classList.toggle('active',x===c);});loadLeaderboard();}
+async function loadLeaderboard(){
+  updateBalanceDisplay();
+  var winners=await fetchTopWinners(currentPeriod,currentCategory);
+  var myRank=await fetchMyRank(currentPeriod,currentCategory);
+  var rankRows=document.getElementById('rank-rows');
+  
+  if(!winners || !winners.length){
+    rankRows.innerHTML='<div class="empty-row" style="padding: 24px 12px; color: var(--muted); text-align: center;">No ranking data in this category yet</div>';
+  } else {
+    rankRows.innerHTML=winners.slice(0,30).map(function(w,i){
+      var nc=i===0?'rank-num gold':i===1?'rank-num silver':i===2?'rank-num bronze':'rank-num';
+      var valDisplay = (currentCategory === 'wins' || currentCategory === 'deposit') ? (parseFloat(w.value || 0).toFixed(2) + ' Br') : (w.value || 0);
+      var isMe = Boolean(tgUserId && (String(w.user_id) === String(tgUserId)));
+      var rowStyle = isMe ? 'background: rgba(255, 107, 0, 0.15); border: 1px solid rgba(255,107,0,0.4); border-radius: 8px;' : '';
+      var meBadge = isMe ? ' <span style="font-size:10px; color:var(--orange); font-weight:800;">(You)</span>' : '';
+      return '<div class="rank-row" style="' + rowStyle + ' animation-delay: ' + (i * 20) + 'ms;"><span class="'+nc+'">'+(i+1)+'</span><span class="rank-name">'+w.name+meBadge+'</span><span class="rank-val" style="text-align:right;">'+valDisplay+'</span></div>';
+    }).join('');
+  }
+
+  if(myRank && myRank.rank){
+    setTxt('my-rank','#'+myRank.rank);
+    var myValDisplay = (currentCategory === 'wins' || currentCategory === 'deposit') ? (parseFloat(myRank.value || 0).toFixed(2) + ' Br') : (myRank.value || 0);
+    setTxt('my-rank-val', myValDisplay);
+  } else {
+    setTxt('my-rank','Not in ranking');
+    setTxt('my-rank-val','0');
+  }
+
+  var labels={games:'Games Played',wins:'Total Won',deposit:'Main Balance',invite:'Invitations'};
+  setTxt('my-rank-val-label',labels[currentCategory]||'Value');
+
+  var headLabels={games:'GAMES',wins:'WON',deposit:'BALANCE',invite:'INVITES'};
+  var headValLabel = headLabels[currentCategory] || 'VALUE';
+  var leadHead = document.getElementById('lbl-lead-head');
+  if (leadHead) {
+    leadHead.innerHTML = '<span>#</span><span>NAME</span><span style="text-align:right;">' + headValLabel + '</span>';
+  }
+}
 
 async function loadWallet(){updateUserInfo();updateBalanceDisplay();var txs=await fetchTransactions();var rows=document.getElementById('wl-tx-rows');if(!txs.length){rows.innerHTML='<div class="empty-row">No transactions yet</div>';return;}rows.innerHTML=txs.map(function(tx){var cls=(tx.type==='deposit'||tx.type==='bingo_win')?'green':'red';var icon=tx.type==='deposit'?'<i class="fa-solid fa-circle-arrow-down" style="color:var(--green); margin-right:4px;"></i>':tx.type==='bingo_win'?'<i class="fa-solid fa-trophy" style="color:var(--yellow); margin-right:4px;"></i>':tx.type==='withdraw'?'<i class="fa-solid fa-circle-arrow-up" style="color:var(--orange); margin-right:4px;"></i>':'<i class="fa-solid fa-gamepad" style="color:var(--blue); margin-right:4px;"></i>';var date=tx.time?tx.time.split('T')[0]:'—';return '<div class="table-row"><span>'+icon+' '+tx.type+'</span><span class="'+cls+'">'+tx.amount+' Br</span><span class="green">Done</span><span class="muted">'+date+'</span></div>';}).join('');}
 
@@ -3069,15 +3032,31 @@ function updateCardGridStyling() {
   }
 }
 
-function toggleCard(n) {
+function updateCardStatusBadge() {
+  var container = document.getElementById('card-status-bar');
+  if (!container) return;
+  if (selCards.size > 0) {
+    var winAmt = Math.round(selCards.size * currentStake * 0.8);
+    container.innerHTML = '<div style="width:100%; padding:10px 14px; background:linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.1) 100%); border:1px solid rgba(16,185,129,0.6); border-radius:12px; display:flex; justify-content:space-between; align-items:center; color:#34d399; font-size:13px; font-weight:800; box-shadow:0 4px 12px rgba(16,185,129,0.2);">' +
+      '<span><i class="fa-solid fa-circle-check" style="margin-right:6px;"></i> Registered: ' + selCards.size + ' Card(s)</span>' +
+      '<span style="color:#fde047; font-weight:800;">Win: ' + winAmt + ' Br</span>' +
+      '</div>' +
+      '<div style="font-size:11px; color:var(--muted); text-align:center; margin-top:4px;"><i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>Tap a selected card to cancel & refund anytime before game starts</div>';
+  } else {
+    container.innerHTML = '<div style="font-size:12px; color:var(--muted); text-align:center; padding:6px; font-weight:700;"><i class="fa-solid fa-hand-pointer" style="color:var(--orange); margin-right:6px;"></i>Tap any card number (1-400) to instantly buy your ticket</div>';
+  }
+}
+
+async function toggleCard(n) {
   if (takenCartelas[n] && takenCartelas[n] !== tgUserId) {
     if (apiAvailable) Telegram.WebApp.showAlert('⚠️ This cartela is already taken by another player! (ይህ ካርቴላ በሌላ ተጫዋች ቀድሞ ተወስዷል!)');
     else alert('⚠️ This cartela is already taken by another player! (ይህ ካርቴላ በሌላ ተጫዋች ቀድሞ ተወስዷል!)');
     return;
   }
 
-  if (soundOn) sfx.playBlip();
   if (selCards.has(n)) {
+    // DESELECT / CANCEL TICKET
+    if (soundOn) sfx.playClick();
     selCards.delete(n);
     var d = cardDeductMap[n] || {fromPlay: currentStake, fromMain: 0};
     userPlayBalance += d.fromPlay;
@@ -3088,20 +3067,47 @@ function toggleCard(n) {
     if (socket && socket.connected) {
       socket.emit('toggle_cartela', { user_id: tgUserId, cartela_num: n, selected: false });
     }
+
+    if (selCards.size === 0) {
+      hasBoughtTicket = false;
+      game.cards = [];
+      game.cardNums = [];
+    } else {
+      var cardNums = Array.from(selCards);
+      game.cardNums = cardNums;
+      game.cards = cardNums.map(function(num){ return generateCardDeterministic(num); });
+      game.marked = game.cards.map(function(){ return new Set([12]); });
+      game.wonLines = game.cards.map(function(){ return new Set(); });
+      game.winAmount = Math.round(cardNums.length * currentStake * 0.8);
+    }
+
+    if (socket && socket.connected) {
+      socket.emit('player_ready', {
+        user_id: tgUserId,
+        name: tgUser ? tgUser.first_name || 'Player' : 'Player',
+        cards: Array.from(selCards),
+        game_id: currentGameId,
+        room: currentRoom,
+        stake: currentStake
+      });
+    }
   } else {
-    if (selCards.size >= 2) return;
+    // SELECT / INSTANT BUY TICKET
+    if (selCards.size >= 2) {
+      if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Maximum 2 cards allowed per player! (በአንድ ጊዜ እስከ 2 ካርቴላ ብቻ መምረጥ ይቻላል!)');
+      else alert('⚠️ Maximum 2 cards allowed per player! (በአንድ ጊዜ እስከ 2 ካርቴላ ብቻ መምረጥ ይቻላል!)');
+      return;
+    }
     var totalAvail = userPlayBalance + userMainBalance;
     if (totalAvail < currentStake) {
-      if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Insufficient balance! በቂ ሂሳብ የለም!');
-      else alert('⚠️ Insufficient balance! በቂ ሂሳብ የለም!');
+      if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Insufficient balance! (በቂ ሂሳብ የለም!)');
+      else alert('⚠️ Insufficient balance! (በቂ ሂሳብ የለም!)');
       return;
     }
-    if (selCards.size === 1 && totalAvail < (currentStake * 2)) {
-      if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Insufficient balance for 2 cards!');
-      else alert('⚠️ Insufficient balance for 2 cards!');
-      return;
-    }
+
+    if (soundOn) sfx.playBlip();
     selCards.add(n);
+
     var fromPlay = 0, fromMain = 0;
     if (userPlayBalance >= currentStake) {
       fromPlay = currentStake;
@@ -3116,9 +3122,51 @@ function toggleCard(n) {
     cardDeductMap[n] = {fromPlay: fromPlay, fromMain: fromMain};
     updateBalanceDisplay();
 
+    var cardNums = Array.from(selCards);
+    game.cardNums = cardNums;
+    game.gameId = currentGameId;
+    game.cards = cardNums.map(function(num){ return generateCardDeterministic(num); });
+    game.marked = game.cards.map(function(){ return new Set([12]); });
+    game.wonLines = game.cards.map(function(){ return new Set(); });
+    game.called = new Set();
+    game.current = null;
+    game.recentBalls = [];
+    game.callCount = 0;
+    game.winAmount = Math.round(cardNums.length * currentStake * 0.8);
+    game.totalPlayers = cardNums.length;
+    game.betDeducted = true;
+    hasBoughtTicket = true;
+
+    setTxt('card1-id', cardNums[0]);
+    setTxt('s-game-id', game.gameId);
+    renderCardHeader('card1-header');
+    if (cardNums.length >= 2) {
+      setTxt('card2-id', cardNums[1]);
+      renderCardHeader('card2-header');
+      var c2 = document.getElementById('card2-box');
+      if (c2) c2.style.display = 'block';
+      var ncs = document.getElementById('no-card-slot');
+      if (ncs) ncs.style.display = 'none';
+    } else {
+      var c2 = document.getElementById('card2-box');
+      if (c2) c2.style.display = 'none';
+      var ncs = document.getElementById('no-card-slot');
+      if (ncs) ncs.style.display = 'flex';
+    }
+
     if (socket && socket.connected) {
       socket.emit('toggle_cartela', { user_id: tgUserId, cartela_num: n, selected: true });
+      socket.emit('player_ready', {
+        user_id: tgUserId,
+        name: tgUser ? tgUser.first_name || 'Player' : 'Player',
+        cards: cardNums,
+        game_id: currentGameId,
+        room: currentRoom,
+        stake: currentStake
+      });
     }
+
+    recordGamePlayed(game.gameId, cardNums, currentStake);
   }
   
   updateCardGridStyling();
@@ -3127,95 +3175,14 @@ function toggleCard(n) {
   var winAmt = Math.round(selCards.size * currentStake * 0.8);
   setTxt('s-win-sel', winAmt);
   setTxt('s-win-game', winAmt);
-  game.totalPlayers = selCards.size;
   updatePlayersDisplay();
-
-  var buyBtn = document.getElementById('buy-ticket-btn');
-  if (buyBtn) {
-    if (selCards.size >= 1 && !hasBoughtTicket && serverGameStatus === 'waiting') {
-      buyBtn.style.display = 'flex';
-    } else {
-      buyBtn.style.display = 'none';
-    }
-  }
+  updateCardStatusBadge();
 }
 
 async function buyTicket() {
-  if (soundOn) sfx.playClick();
-  var cardNums = Array.from(selCards);
-  if (cardNums.length < 1) {
-    if (apiAvailable) Telegram.WebApp.showAlert('⚠️ Please select at least 1 card! (እባክዎ ቢያንስ 1 ካርቴላ ይምረጡ!)');
-    else alert('⚠️ Please select at least 1 card! (እባክዎ ቢያንስ 1 ካርቴላ ይምረጡ!)');
-    return;
+  if (selCards.size > 0) {
+    updateCardStatusBadge();
   }
-  
-  var buyBtn = document.getElementById('buy-ticket-btn');
-  if (buyBtn) buyBtn.style.display = 'none';
-  
-  var betAmount = cardNums.length * currentStake;
-  var deducted = await deductBet(betAmount);
-  if (!deducted) {
-    if (buyBtn) buyBtn.style.display = 'flex';
-    return;
-  }
-  
-  game.cardNums = cardNums;
-  game.gameId = currentGameId;
-  
-  game.cards = cardNums.map(function(num){
-    return generateCardDeterministic(num);
-  });
-  
-  game.marked = game.cards.map(function(){
-    return new Set([12]);
-  });
-  game.wonLines = game.cards.map(function(){
-    return new Set();
-  });
-  
-  game.called = new Set();
-  game.current = null;
-  game.recentBalls = [];
-  game.callCount = 0;
-  setTxt('s-call', '0');
-  game.winAmount = Math.round(betAmount * 0.8);
-  game.totalPlayers = cardNums.length;
-  game.betDeducted = true;
-  winnersThisRound = [];
-  myWinReported = false;
-  
-  await recordGamePlayed(game.gameId, cardNums, currentStake);
-  updatePlayersDisplay();
-  
-  setTxt('card1-id', cardNums[0]);
-  setTxt('s-game-id', game.gameId);
-  renderCardHeader('card1-header');
-  if (cardNums.length >= 2) {
-    setTxt('card2-id', cardNums[1]);
-    renderCardHeader('card2-header');
-    document.getElementById('card2-box').style.display = 'block';
-    document.getElementById('no-card-slot').style.display = 'none';
-  } else {
-    document.getElementById('card2-box').style.display = 'none';
-    document.getElementById('no-card-slot').style.display = 'flex';
-  }
-  
-  if (socket && socket.connected) {
-    socket.emit('player_ready', {
-      user_id: tgUserId,
-      name: tgUser ? tgUser.first_name || 'Player' : 'Player',
-      cards: cardNums,
-      game_id: currentGameId,
-      room: currentRoom,
-      stake: currentStake
-    });
-  }
-  
-  hasBoughtTicket = true;
-  var bGameIdEl = document.getElementById('bought-game-id');
-  if (bGameIdEl) bGameIdEl.textContent = currentGameId || '—';
-  var bOverlay = document.getElementById('bought-overlay');
-  if (bOverlay) bOverlay.style.display = 'flex';
 }
 
 function startTimer(){
@@ -3227,11 +3194,6 @@ function startTimer(){
     timeLeft--;
     el.textContent=timeLeft+'s';
     el.style.color=timeLeft<=10?'var(--orange)':'var(--yellow)';
-    
-    var bcEl = document.getElementById('bought-countdown-text');
-    if (bcEl && hasBoughtTicket) {
-      bcEl.textContent = 'Game starts in ' + timeLeft + 's...';
-    }
     
     if(soundOn && timeLeft<=5 && timeLeft>0){
       sfx.playCountdown();
@@ -3733,10 +3695,6 @@ function newRound(){
     var desc = runOverlay.querySelector('p');
     if (desc) desc.innerHTML = 'A synchronized round is currently active. Please wait for the next countdown to buy a ticket.<br><span style="color:var(--orange); font-size:12px; font-weight:600; margin-top:5px; display:inline-block;">ጨዋታው በመካሄድ ላይ ነው። እባክዎ ቀጣዩን ዙር ይጠብቁ።</span>';
   }
-  var bOverlay = document.getElementById('bought-overlay');
-  if (bOverlay) bOverlay.style.display = 'none';
-  var buyBtn = document.getElementById('buy-ticket-btn');
-  if (buyBtn) buyBtn.style.display = 'none';
 
   selCards=new Set();
   takenCartelas={};
@@ -3948,7 +3906,7 @@ function showScreen(id){
   
   var nav = document.querySelector('.bottom-nav');
   if (nav) {
-    if (!tgUserId || id === 'screen-auth' || id === 'screen-game' || id === 'screen-winner') {
+    if (!tgUserId || id === 'screen-game' || id === 'screen-winner') {
       nav.style.display = 'none';
     } else {
       nav.style.display = 'flex';

@@ -576,6 +576,7 @@ module.exports = {
       if (category === 'deposit') orderBy = 'main_balance';
       if (category === 'invite') orderBy = 'invited';
       if (category === 'games') orderBy = 'games_played';
+      if (category === 'wins') orderBy = 'total_won';
       
       const querySnap = await db.collection('users').get();
       const users = [];
@@ -583,21 +584,22 @@ module.exports = {
         users.push(snap.data());
       });
       
-      users.sort((a, b) => (b[orderBy] || 0) - (a[orderBy] || 0));
+      users.sort((a, b) => parseFloat(b[orderBy] || 0) - parseFloat(a[orderBy] || 0));
       
       return users.slice(0, 30).map(u => {
         let displayName = u.first_name;
         if (!displayName && u.username) {
           if (u.username.startsWith('__pwd__:')) {
-            displayName = 'Web User ' + (u.user_id ? u.user_id.slice(-6) : '');
+            displayName = 'Web User ' + (u.user_id ? String(u.user_id).slice(-6) : '');
           } else {
             displayName = u.username;
           }
         }
-        if (!displayName) displayName = 'Anonymous';
+        if (!displayName) displayName = u.user_id ? ('User ' + String(u.user_id).slice(-4)) : 'Anonymous';
         return {
+          user_id: u.user_id,
           name: displayName,
-          value: u[orderBy] || 0
+          value: parseFloat(u[orderBy] || 0)
         };
       });
     } catch (err) {
@@ -612,6 +614,7 @@ module.exports = {
       if (category === 'deposit') orderBy = 'main_balance';
       if (category === 'invite') orderBy = 'invited';
       if (category === 'games') orderBy = 'games_played';
+      if (category === 'wins') orderBy = 'total_won';
       
       const querySnap = await db.collection('users').get();
       const users = [];
@@ -619,19 +622,20 @@ module.exports = {
         users.push(snap.data());
       });
       
-      users.sort((a, b) => (b[orderBy] || 0) - (a[orderBy] || 0));
+      users.sort((a, b) => parseFloat(b[orderBy] || 0) - parseFloat(a[orderBy] || 0));
       
-      const rankIdx = users.findIndex(u => u.user_id === userId);
+      const targetId = String(userId).trim();
+      const rankIdx = users.findIndex(u => String(u.user_id).trim() === targetId);
       if (rankIdx !== -1) {
         return {
           rank: rankIdx + 1,
-          value: users[rankIdx][orderBy] || 0
+          value: parseFloat(users[rankIdx][orderBy] || 0)
         };
       }
-      return null;
+      return { rank: null, value: 0 };
     } catch (err) {
       console.error('Admin SDK getMyRank error:', err);
-      return null;
+      return { rank: null, value: 0 };
     }
   },
 

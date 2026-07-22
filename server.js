@@ -732,6 +732,31 @@ io.on('connection', (socket) => {
 
   socket.on('leave_room', (data) => {
     socket.leave(globalGame.roomId);
+    if (socket.userId && globalGame.status === 'waiting') {
+      delete globalGame.players[socket.userId];
+      if (globalGame.selectedCartelas) {
+        for (const [cartela, uId] of Object.entries(globalGame.selectedCartelas)) {
+          if (uId === socket.userId) {
+            delete globalGame.selectedCartelas[cartela];
+          }
+        }
+      }
+      const playersList = Object.values(globalGame.players);
+      let totalCardsCount = 0;
+      globalGame.totalPot = 0;
+      playersList.forEach(p => {
+        totalCardsCount += p.cardNumbers.length;
+        globalGame.totalPot += p.cardNumbers.length * p.stake;
+      });
+      io.to(globalGame.roomId).emit('player_joined', {
+        room: globalGame.roomId,
+        total_players: totalCardsCount,
+        total_pot: globalGame.totalPot
+      });
+      io.to(globalGame.roomId).emit('cartelas_update', {
+        selectedCartelas: globalGame.selectedCartelas
+      });
+    }
     currentRoom = null;
   });
 
@@ -781,15 +806,19 @@ io.on('connection', (socket) => {
     currentUserId = user_id;
     socket.userId = user_id;
     
-    // Store player details and generate their cards deterministically
-    const cardGrids = cards.map(cId => generateCardDeterministic(cId));
-    globalGame.players[user_id] = {
-      userId: user_id,
-      name: name || 'Anonymous',
-      cards: cardGrids,
-      cardNumbers: cards,
-      stake: Number(stake) || 10
-    };
+    if (!cards || cards.length === 0) {
+      delete globalGame.players[user_id];
+    } else {
+      // Store player details and generate their cards deterministically
+      const cardGrids = cards.map(cId => generateCardDeterministic(cId));
+      globalGame.players[user_id] = {
+        userId: user_id,
+        name: name || 'Anonymous',
+        cards: cardGrids,
+        cardNumbers: cards,
+        stake: Number(stake) || 10
+      };
+    }
 
     // Calculate total cards and total pot
     const playersList = Object.values(globalGame.players);
@@ -806,15 +835,6 @@ io.on('connection', (socket) => {
       total_players: totalCardsCount,
       total_pot: globalGame.totalPot
     });
-
-    // INSTANT START LOGIC: If all active connected sockets have chosen cards and joined players
-    const connectedSockets = io.sockets.adapter.rooms.get(globalGame.roomId);
-    const connectedCount = connectedSockets ? connectedSockets.size : 0;
-    const readyCount = Object.keys(globalGame.players).length;
-
-    if (connectedCount >= 1 && readyCount >= connectedCount) {
-      tryStartGame(globalGame);
-    }
   });
 
   socket.on('declare_winner', async (data) => {
@@ -873,21 +893,32 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    // We keep players registered in room.players so they can win even if they disconnect temporarily.
-    // Clean up their selected cartelas in the lobby to make them available for others
-    if (socket.userId && globalGame.selectedCartelas) {
-      let updated = false;
-      for (const [cartela, uId] of Object.entries(globalGame.selectedCartelas)) {
-        if (uId === socket.userId) {
-          delete globalGame.selectedCartelas[cartela];
-          updated = true;
+    if (socket.userId && globalGame.status === 'waiting') {
+      delete globalGame.players[socket.userId];
+      if (globalGame.selectedCartelas) {
+        let updated = false;
+        for (const [cartela, uId] of Object.entries(globalGame.selectedCartelas)) {
+          if (uId === socket.userId) {
+            delete globalGame.selectedCartelas[cartela];
+            updated = true;
+          }
         }
       }
-      if (updated) {
-        io.to(globalGame.roomId).emit('cartelas_update', {
-          selectedCartelas: globalGame.selectedCartelas
-        });
-      }
+      const playersList = Object.values(globalGame.players);
+      let totalCardsCount = 0;
+      globalGame.totalPot = 0;
+      playersList.forEach(p => {
+        totalCardsCount += p.cardNumbers.length;
+        globalGame.totalPot += p.cardNumbers.length * p.stake;
+      });
+      io.to(globalGame.roomId).emit('player_joined', {
+        room: globalGame.roomId,
+        total_players: totalCardsCount,
+        total_pot: globalGame.totalPot
+      });
+      io.to(globalGame.roomId).emit('cartelas_update', {
+        selectedCartelas: globalGame.selectedCartelas
+      });
     }
   });
 });
