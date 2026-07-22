@@ -116,32 +116,36 @@ app.get('/api/config', async (req, res) => {
 });
 
 // Client deposit submission request
-app.post('/api/deposit/request', async (req, res) => {
-  const { user_id, amount } = req.body;
+const handleDepositRequest = async (req, res) => {
+  const { user_id, amount, ref_phone, ref } = req.body;
   if (!user_id || !amount) return res.status(400).json({ error: 'Missing parameters' });
   if (parseFloat(amount) <= 0) return res.status(400).json({ error: 'Invalid amount' });
   
-  const result = await db.createDepositRequest(user_id, amount);
+  const result = await db.createDepositRequest(user_id, amount, ref_phone || ref);
   if (result.success) {
     res.json({ success: true, tx_id: result.tx_id });
   } else {
     res.status(400).json({ error: result.error });
   }
-});
+};
+app.post('/api/deposit/request', handleDepositRequest);
+app.post('/api/client/deposit', handleDepositRequest);
 
 // Client withdrawal submission request
-app.post('/api/withdraw/request', async (req, res) => {
-  const { user_id, amount } = req.body;
+const handleWithdrawRequest = async (req, res) => {
+  const { user_id, amount, receiver_phone, phone } = req.body;
   if (!user_id || !amount) return res.status(400).json({ error: 'Missing parameters' });
   if (parseFloat(amount) <= 0) return res.status(400).json({ error: 'Invalid amount' });
 
-  const result = await db.createWithdrawRequest(user_id, amount);
+  const result = await db.createWithdrawRequest(user_id, amount, receiver_phone || phone);
   if (result.success) {
     res.json({ success: true, tx_id: result.tx_id });
   } else {
     res.status(400).json({ error: result.error });
   }
-});
+};
+app.post('/api/withdraw/request', handleWithdrawRequest);
+app.post('/api/client/withdraw', handleWithdrawRequest);
 
 // Admin Panel endpoints
 app.post('/api/admin/login', (req, res) => {
@@ -343,10 +347,24 @@ app.get('/api/balance', async (req, res) => {
   if (!user_id) return res.status(400).json({ error: 'User ID is required' });
   const user = await db.getUser(user_id);
   const has_password = Boolean(user.username && user.username.startsWith('__pwd__:'));
+  
+  const total_deposited = await db.getUserTotalDeposited(user_id);
+  const total_wagered = await db.getUserTotalWagered(user_id);
+  const required_wager = total_deposited * 15;
+  const min_deposit_met = total_deposited >= 50;
+  const wagering_completed = total_wagered >= required_wager;
+  const can_withdraw = min_deposit_met && wagering_completed && user.mainBalance >= 150;
+
   res.json({
     success: true,
     main_balance: user.mainBalance,
     play_balance: user.playBalance,
+    total_deposited: total_deposited,
+    total_wagered: total_wagered,
+    required_wager: required_wager,
+    min_deposit_met: min_deposit_met,
+    wagering_completed: wagering_completed,
+    can_withdraw: can_withdraw,
     has_password: has_password,
     status: user.status || 'active',
     ban_reason: user.banReason || ''

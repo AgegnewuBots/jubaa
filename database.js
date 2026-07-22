@@ -194,12 +194,25 @@ const db = {
 // Normalizes user fields to support camelCase and snake_case properties seamlessly
 function normalizeUser(dbUser) {
   if (!dbUser) return null;
+  const mainBalance = typeof dbUser.main_balance === 'number' ? dbUser.main_balance : parseFloat(dbUser.main_balance || 0);
+  const playBalance = typeof dbUser.play_balance === 'number' ? dbUser.play_balance : parseFloat(dbUser.play_balance || 0);
+  const totalDeposited = typeof dbUser.total_deposited === 'number' ? dbUser.total_deposited : parseFloat(dbUser.total_deposited || 0);
+  const totalWagered = typeof dbUser.total_wagered === 'number' ? dbUser.total_wagered : parseFloat(dbUser.total_wagered || 0);
+  const requiredWager = totalDeposited * 15;
+  const minDepositMet = totalDeposited >= 50;
+  const wageringCompleted = totalWagered >= requiredWager;
+
   return {
     ...dbUser,
     userId: dbUser.user_id,
     firstName: dbUser.first_name,
-    mainBalance: typeof dbUser.main_balance === 'number' ? dbUser.main_balance : parseFloat(dbUser.main_balance || 0),
-    playBalance: typeof dbUser.play_balance === 'number' ? dbUser.play_balance : parseFloat(dbUser.play_balance || 0),
+    mainBalance: mainBalance,
+    playBalance: playBalance,
+    totalDeposited: totalDeposited,
+    totalWagered: totalWagered,
+    requiredWager: requiredWager,
+    minDepositMet: minDepositMet,
+    wageringCompleted: wageringCompleted,
     gamesPlayed: dbUser.games_played || 0,
     gamesWon: dbUser.games_won || 0,
     totalWon: dbUser.total_won || 0,
@@ -207,8 +220,8 @@ function normalizeUser(dbUser) {
     isVip: dbUser.is_vip || false,
     currentStreak: dbUser.current_streak || 0,
     highestStreak: dbUser.highest_streak || 0,
-    mainBalanceValue: typeof dbUser.main_balance === 'number' ? dbUser.main_balance : parseFloat(dbUser.main_balance || 0),
-    playBalanceValue: typeof dbUser.play_balance === 'number' ? dbUser.play_balance : parseFloat(dbUser.play_balance || 0),
+    mainBalanceValue: mainBalance,
+    playBalanceValue: playBalance,
     status: dbUser.status || 'active',
     banReason: dbUser.ban_reason || ''
   };
@@ -356,6 +369,7 @@ module.exports = {
         const user = docSnap.data();
         let play = parseFloat(user.play_balance || 0);
         let main = parseFloat(user.main_balance || 0);
+        let totalWagered = parseFloat(user.total_wagered || 0) + amount;
         
         if (play + main < amount) return null;
         
@@ -368,10 +382,11 @@ module.exports = {
         
         transaction.update(docRef, {
           play_balance: play,
-          main_balance: main
+          main_balance: main,
+          total_wagered: totalWagered
         });
         
-        return { play, main, user };
+        return { play, main, totalWagered, user };
       });
       
       if (!result) return null;
@@ -388,7 +403,8 @@ module.exports = {
       return normalizeUser({
         ...result.user,
         play_balance: result.play,
-        main_balance: result.main
+        main_balance: result.main,
+        total_wagered: result.totalWagered
       });
     } catch (err) {
       console.error('Admin SDK deductBet error:', err);
@@ -775,13 +791,64 @@ module.exports = {
     }
   },
 
-  async createDepositRequest(userId, amount) {
+  async getUserTotalDeposited(userId) {
+    try {
+      const userRef = db.collection('users').doc(userId);
+      const userSnap = await userRef.get();
+      let userDocDeposited = 0;
+      if (userSnap.exists) {
+        userDocDeposited = parseFloat(userSnap.data().total_deposited || 0);
+      }
+
+      const depositsSnap = await db.collection('transactions')
+        .where('user_id', '==', userId)
+        .where('type', '==', 'deposit')
+        .where('status', '==', 'Done')
+        .get();
+      let txsDeposited = 0;
+      depositsSnap.forEach(snap => {
+        txsDeposited += parseFloat(snap.data().amount || 0);
+      });
+      return Math.max(userDocDeposited, txsDeposited);
+    } catch (err) {
+      console.error('Admin SDK getUserTotalDeposited error:', err);
+      return 0;
+    }
+  },
+
+  async getUserTotalWagered(userId) {
+    try {
+      const userRef = db.collection('users').doc(userId);
+      const userSnap = await userRef.get();
+      let userDocWagered = 0;
+      if (userSnap.exists) {
+        userDocWagered = parseFloat(userSnap.data().total_wagered || 0);
+      }
+
+      const betsSnap = await db.collection('transactions')
+        .where('user_id', '==', userId)
+        .where('type', '==', 'bet')
+        .where('status', '==', 'Done')
+        .get();
+      let txsWagered = 0;
+      betsSnap.forEach(snap => {
+        txsWagered += parseFloat(snap.data().amount || 0);
+      });
+      return Math.max(userDocWagered, txsWagered);
+    } catch (err) {
+      console.error('Admin SDK getUserTotalWagered error:', err);
+      return 0;
+    }
+  },
+
+  async createDepositRequest(userId, amount, refPhone) {
     try {
       const docRef = db.collection('transactions').doc();
       const tx = {
         user_id: userId,
         type: 'deposit',
         amount: parseFloat(amount),
+        ref_phone: refPhone || '',
         status: 'Pending',
         time: new Date().toISOString()
       };
@@ -793,7 +860,7 @@ module.exports = {
     }
   },
 
-  async createWithdrawRequest(userId, amount) {
+  async createWithdrawRequest(userId, amount, receiverPhone) {
     try {
       // 1. Verify user exists and check balance
       const userRef = db.collection('users').doc(userId);
@@ -805,31 +872,36 @@ module.exports = {
       const mainBal = parseFloat(user.main_balance || 0);
       const reqAmount = parseFloat(amount);
       
+      if (reqAmount < 150) {
+        return { success: false, error: 'Minimum withdrawal amount is 150 ETB (ቢያንስ 150 ብር ማውጣት ይችላሉ።)' };
+      }
+
       if (mainBal < reqAmount) {
         return { success: false, error: 'Insufficient withdrawable balance (ያልበቃ ዋና ሂሳብ)' };
       }
 
       // 2. REQUIRE AT LEAST 50 ETB IN DEPOSIT TO WITHDRAW
-      // Query completed deposits for this user
-      const depositsSnap = await db.collection('transactions')
-        .where('user_id', '==', userId)
-        .where('type', '==', 'deposit')
-        .where('status', '==', 'Done')
-        .get();
-        
-      let totalDeposited = 0;
-      depositsSnap.forEach(snap => {
-        totalDeposited += parseFloat(snap.data().amount || 0);
-      });
-      
+      const totalDeposited = await this.getUserTotalDeposited(userId);
       if (totalDeposited < 50) {
         return { 
           success: false, 
-          error: 'To withdraw, you must deposit at least 50 ETB first (ገንዘብ ለማውጣት ቢያንስ 50 ብር ማስገባት አለብዎት።)' 
+          error: `To withdraw, you must deposit at least 50 ETB first. You have deposited ${totalDeposited} ETB. (ገንዘብ ለማውጣት ቢያንስ 50 ብር ማስገባት አለብዎት።)` 
         };
       }
 
-      // 3. Deduct balance and create request
+      // 3. REQUIRE 15X WAGERING OF TOTAL DEPOSITED AMOUNT
+      const totalWagered = await this.getUserTotalWagered(userId);
+      const requiredWager = totalDeposited * 15;
+
+      if (totalWagered < requiredWager) {
+        const remainingWager = Math.ceil(requiredWager - totalWagered);
+        return {
+          success: false,
+          error: `Wagering requirement not met! You must wager 15x your total deposit before withdrawing.\n• Total Deposited: ${totalDeposited} ETB\n• Required Wager (15x): ${requiredWager} ETB\n• Current Wagered: ${Math.floor(totalWagered)} ETB\n• Remaining Wager: ${remainingWager} ETB`
+        };
+      }
+
+      // 4. Deduct balance and create request
       await db.runTransaction(async (transaction) => {
         const freshSnap = await transaction.get(userRef);
         const freshUser = freshSnap.data();
@@ -847,6 +919,7 @@ module.exports = {
         user_id: userId,
         type: 'withdraw',
         amount: reqAmount,
+        receiver_phone: receiverPhone || '',
         status: 'Pending',
         time: new Date().toISOString()
       };
@@ -872,8 +945,11 @@ module.exports = {
         if (userSnap.exists) {
           const user = userSnap.data();
           const currentMain = parseFloat(user.main_balance || 0);
+          const currentDeposited = parseFloat(user.total_deposited || 0);
+          const depAmount = parseFloat(tx.amount || 0);
           transaction.update(userRef, {
-            main_balance: currentMain + parseFloat(tx.amount)
+            main_balance: currentMain + depAmount,
+            total_deposited: currentDeposited + depAmount
           });
         }
         transaction.update(txRef, { status: 'Done' });
