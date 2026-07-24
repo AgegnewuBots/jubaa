@@ -1036,6 +1036,23 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
           <div class="ctrl-item"><span class="ctrl-lbl green">Auto</span><div class="toggle on locked" id="auto-toggle"></div></div>
           <div class="ctrl-item"><span class="ctrl-lbl blue"><i class="fa-solid fa-volume-xmark sound-icon-inner"></i></span><div class="toggle" id="sound-toggle" onclick="toggleSound()"></div></div>
         </div>
+
+        <!-- Active Cards in Play Bar -->
+        <div class="active-cards-bar" id="active-cards-bar" style="margin: 8px 0; padding: 10px 12px; background: rgba(18, 18, 42, 0.9); border: 1px solid rgba(255, 123, 0, 0.35); border-radius: 12px; backdrop-filter: blur(8px);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+            <div style="font-size: 11.5px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-layer-group" style="color:var(--orange);"></i>
+              <span>CARDS IN PLAY (<span id="acb-count">0</span>)</span>
+            </div>
+            <div style="font-size: 11px; font-weight: 800; color: #34d399; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 8px;">
+              PRIZE: <span id="acb-pot">0</span>
+            </div>
+          </div>
+          <div class="acb-tags-container" id="acb-tags" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 80px; overflow-y: auto; padding-right: 2px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
         <div class="card-box" id="card1-box">
           <div class="card-id-lbl">CARD: <span id="card1-id">—</span></div>
           <div class="card-hdr" id="card1-header"></div>
@@ -2271,7 +2288,68 @@ function setTxt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;
 function colFor(n){return Math.floor((n-1)/15);}
 function letterFor(n){return COLS[colFor(n)];}
 
-function updatePlayersDisplay(){var p = game.totalPlayers || selCards.size || 0; setTxt('s-players', p); setTxt('w-players-top', p);}
+function syncGameRoundData(data) {
+  if (!data) return;
+  if (data.total_players !== undefined) game.totalPlayers = data.total_players;
+  if (data.total_cards !== undefined) game.totalCards = data.total_cards;
+  if (data.total_pot !== undefined) game.totalPot = data.total_pot;
+  if (data.total_prize !== undefined) game.totalPrize = data.total_prize;
+  if (data.active_cards !== undefined) game.activeCards = data.active_cards || [];
+  updatePlayersDisplay();
+}
+
+function updatePlayersDisplay(){
+  var cardsCount = game.totalCards || (game.activeCards ? game.activeCards.length : 0) || selCards.size || 0;
+  var playersCount = game.totalPlayers || (game.activeCards ? new Set(game.activeCards.map(function(c){ return c.userId; })).size : 0) || (selCards.size > 0 ? 1 : 0);
+  var potAmount = game.totalPot || (cardsCount * currentStake) || 0;
+  var prizeAmount = game.totalPrize || Math.round(potAmount * 0.8) || 0;
+
+  setTxt('s-players', cardsCount > 0 ? cardsCount : '0');
+  setTxt('w-players-top', cardsCount);
+  setTxt('s-win-game', prizeAmount);
+  setTxt('s-win-sel', Math.round(selCards.size * currentStake * 0.8));
+
+  renderActiveCardsBar();
+}
+
+function renderActiveCardsBar() {
+  var bar = document.getElementById('active-cards-bar');
+  if (!bar) return;
+
+  var cards = game.activeCards || [];
+  if (cards.length === 0 && selCards.size > 0) {
+    cards = Array.from(selCards).map(function(cn) {
+      return { cardNum: cn, userId: tgUserId, name: (tgUser && tgUser.first_name) || 'You' };
+    });
+  }
+
+  var countEl = document.getElementById('acb-count');
+  var potEl = document.getElementById('acb-pot');
+  var tagsEl = document.getElementById('acb-tags');
+
+  var cardsCount = cards.length;
+  var pot = game.totalPot || (cardsCount * currentStake);
+  var prize = game.totalPrize || Math.round(pot * 0.8);
+
+  if (countEl) countEl.textContent = cardsCount;
+  if (potEl) potEl.textContent = prize + ' Br';
+
+  if (tagsEl) {
+    if (cardsCount === 0) {
+      tagsEl.innerHTML = '<span style="font-size:11px; color:var(--muted); font-style:italic;">No cards active yet in this room</span>';
+    } else {
+      tagsEl.innerHTML = cards.map(function(c) {
+        var isMine = (c.userId === tgUserId) || selCards.has(c.cardNum);
+        var badgeStyle = isMine 
+          ? 'background:rgba(16,185,129,0.25); border:1px solid rgba(16,185,129,0.6); color:#34d399;'
+          : 'background:rgba(2,132,199,0.25); border:1px solid rgba(2,132,199,0.5); color:#38bdf8;';
+        var icon = isMine ? 'fa-solid fa-user-check' : 'fa-solid fa-ticket';
+        var label = isMine ? 'Card #' + c.cardNum + ' (You)' : 'Card #' + c.cardNum + ' (' + (c.name || 'Player') + ')';
+        return '<span style="font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; ' + badgeStyle + '"><i class="' + icon + '"></i> ' + label + '</span>';
+      }).join('');
+    }
+  }
+}
 
 function selectStake(stake) {
   if (soundOn) sfx.playClick();
@@ -2909,16 +2987,12 @@ function initSocket(){
     
     socket.on('player_joined', function(data){
       if(data.room && data.room !== currentRoom) return; 
-      game.totalPlayers = data.total_players;
-      updatePlayersDisplay();
+      syncGameRoundData(data);
     });
     
     socket.on('game_state_update', function(data){
       if(data.room && data.room !== currentRoom) return; 
-      if(data.total_players){
-        game.totalPlayers = data.total_players;
-        updatePlayersDisplay();
-      }
+      syncGameRoundData(data);
     });
     
     socket.on('ball_called', function(data){
@@ -2943,10 +3017,7 @@ function initSocket(){
       var runOverlay = document.getElementById('running-overlay');
       if (runOverlay) runOverlay.style.display = 'none';
       
-      if(data.total_players){
-        game.totalPlayers = data.total_players;
-        updatePlayersDisplay();
-      }
+      syncGameRoundData(data);
       
       stopAutoGame();
       stopWaitDraw();
@@ -3755,7 +3826,7 @@ async function startGame(){
     setTxt('sel-count','0');
     setTxt('s-win-sel','0');
     setTxt('s-win-game','0');
-    game.totalPlayers=0;
+    if (!game.totalCards) game.totalPlayers = 0;
     updatePlayersDisplay();
     updateBalanceDisplay();
     timeLeft=60;
@@ -3788,8 +3859,8 @@ async function startGame(){
   game.recentBalls=[];
   game.callCount=0;
   setTxt('s-call','0');
-  game.winAmount=Math.round(betAmount*0.8);
-  game.totalPlayers=cardNums.length;
+  game.winAmount=game.totalPrize || Math.round((game.totalPot || betAmount) * 0.8);
+  if (!game.totalCards) game.totalCards = cardNums.length;
   game.betDeducted=true;
   winnersThisRound=[];
   myWinReported=false;
@@ -4063,8 +4134,10 @@ function showObserverWinner(data){
   }
   var namesHtml=winnersThisRound.map(function(w, idx){return '<div class="winner-name-chip" style="animation-delay: ' + (idx * 0.15) + 's;"><span class="wn-crown">👑</span><span>'+w.name+'</span><span class="wn-card">#'+w.cardNum+'</span></div>';}).join('');
   document.getElementById('winners-names-row').innerHTML=namesHtml;
-  setTxt('w-prize',(data.prize||0));
-  setTxt('w-prize-each',wc>1?Math.floor((data.prize||0)/wc)+' each ('+wc+' winners)':'');
+  
+  var totalPrize = data.total_prize || data.prize || game.totalPrize || 0;
+  setTxt('w-prize', totalPrize);
+  setTxt('w-prize-each', wc>1 ? Math.floor(totalPrize/wc)+' each ('+wc+' winners)' : '');
   document.getElementById('w-card-box').style.display='none';
   showScreen('screen-winner');
   var iAmWinner = false;
@@ -4073,7 +4146,7 @@ function showObserverWinner(data){
   }
   if (iAmWinner) {
     startConfetti();
-    var prizeEach = Math.floor((data.prize||0)/Math.max(wc, 1));
+    var prizeEach = Math.floor(totalPrize/Math.max(wc, 1));
     sendBrowserNotification('JUBA BINGO 🏆', 'CONGRATULATIONS! You won ' + prizeEach + ' Br! 🎉');
   }
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
@@ -4445,27 +4518,21 @@ function setupOverrides() {
   if (!socket) return;
   socket.on('player_joined', function(data) {
     if(data.room && data.room !== currentRoom) return; 
-    game.totalPlayers=data.total_players;
-    game.totalPot=data.total_pot;
-    updatePlayersDisplay();
+    syncGameRoundData(data);
   });
   socket.on('game_state_update', function(data) {
     if(data.room && data.room !== currentRoom) return; 
-    if(data.total_players){
-      game.totalPlayers=data.total_players;
-      updatePlayersDisplay();
-    }
+    syncGameRoundData(data);
   });
   socket.off('game_ended');
   socket.on('game_ended', function(data) {
     if(data.room && data.room !== currentRoom) return; 
     stopAutoGame();
     stopWaitDraw();
+    syncGameRoundData(data);
     if(game.cards.length===0) {
       showObserverWinner(data);
     } else {
-      game.totalPrize = data.total_prize;
-      // Wait, finalizeWinner handles local winning state. If we receive game_ended, it means the server finalized the game.
       if (data.winners && data.winners.length > 0) {
         winnersThisRound = data.winners.map(function(w) {
           return {

@@ -463,19 +463,18 @@ app.post('/api/game_played', async (req, res) => {
 });
 
 app.get('/api/game_state', async (req, res) => {
-  // Calculate total cards bought in the global game
-  const playersList = Object.values(globalGame.players);
-  let totalCardsCount = 0;
-  playersList.forEach(p => {
-    totalCardsCount += p.cardNumbers.length;
-  });
+  const summary = getRoomGameSummary(globalGame);
 
   res.json({
     game_running: globalGame.status === 'running',
     game_id: globalGame.gameId,
     time_left: globalGame.timeLeft,
     called_numbers: globalGame.calledNumbers,
-    total_players: totalCardsCount
+    total_players: summary.total_players,
+    total_cards: summary.total_cards,
+    total_pot: summary.total_pot,
+    total_prize: summary.total_prize,
+    active_cards: summary.active_cards
   });
 });
 
@@ -539,6 +538,38 @@ const globalGame = {
   selectedCartelas: {} // cartela_num -> userId mapping for real-time lobby synchronization
 };
 
+// Helper to compute game summary
+function getRoomGameSummary(game) {
+  const playersList = Object.values(game.players || {});
+  let totalCardsCount = 0;
+  let totalPot = 0;
+  const activeCards = [];
+
+  playersList.forEach(p => {
+    const cardNums = p.cardNumbers || [];
+    totalCardsCount += cardNums.length;
+    totalPot += cardNums.length * (Number(p.stake) || 10);
+    cardNums.forEach(cNum => {
+      activeCards.push({
+        cardNum: cNum,
+        userId: p.userId,
+        name: p.name || 'Player'
+      });
+    });
+  });
+
+  game.totalPot = totalPot;
+  const totalPrize = Math.round(totalPot * 0.8);
+
+  return {
+    total_players: playersList.length,
+    total_cards: totalCardsCount,
+    total_pot: totalPot,
+    total_prize: totalPrize,
+    active_cards: activeCards
+  };
+}
+
 // Start countdown logic for the global game
 function startGameCountdown(game) {
   if (game.timer) clearInterval(game.timer);
@@ -562,13 +593,9 @@ function startGameCountdown(game) {
 
 // Attempt to start the game
 function tryStartGame(game) {
-  const playersList = Object.values(game.players);
-  let totalCardsCount = 0;
-  playersList.forEach(p => {
-    totalCardsCount += p.cardNumbers.length;
-  });
+  const summary = getRoomGameSummary(game);
 
-  if (totalCardsCount >= 1) {
+  if (summary.total_cards >= 1) {
     // We have players, let's start!
     clearInterval(game.timer);
     game.timer = null;
@@ -580,7 +607,11 @@ function tryStartGame(game) {
     io.to(game.roomId).emit('game_started', {
       room: game.roomId,
       game_id: game.gameId,
-      total_players: totalCardsCount
+      total_players: summary.total_players,
+      total_cards: summary.total_cards,
+      total_pot: summary.total_pot,
+      total_prize: summary.total_prize,
+      active_cards: summary.active_cards
     });
 
     // Broadcast empty selections to sync up clients
@@ -724,11 +755,7 @@ io.on('connection', (socket) => {
     }
     
     // Send initial game state
-    const playersList = Object.values(globalGame.players);
-    let totalCardsCount = 0;
-    playersList.forEach(p => {
-      totalCardsCount += p.cardNumbers.length;
-    });
+    const summary = getRoomGameSummary(globalGame);
 
     socket.emit('countdown_update', {
       room: currentRoom,
@@ -739,7 +766,11 @@ io.on('connection', (socket) => {
     
     socket.emit('game_state_update', {
       room: currentRoom,
-      total_players: totalCardsCount
+      total_players: summary.total_players,
+      total_cards: summary.total_cards,
+      total_pot: summary.total_pot,
+      total_prize: summary.total_prize,
+      active_cards: summary.active_cards
     });
 
     // Sync selected cartelas for the joining user
@@ -759,17 +790,14 @@ io.on('connection', (socket) => {
           }
         }
       }
-      const playersList = Object.values(globalGame.players);
-      let totalCardsCount = 0;
-      globalGame.totalPot = 0;
-      playersList.forEach(p => {
-        totalCardsCount += p.cardNumbers.length;
-        globalGame.totalPot += p.cardNumbers.length * p.stake;
-      });
+      const summary = getRoomGameSummary(globalGame);
       io.to(globalGame.roomId).emit('player_joined', {
         room: globalGame.roomId,
-        total_players: totalCardsCount,
-        total_pot: globalGame.totalPot
+        total_players: summary.total_players,
+        total_cards: summary.total_cards,
+        total_pot: summary.total_pot,
+        total_prize: summary.total_prize,
+        active_cards: summary.active_cards
       });
       io.to(globalGame.roomId).emit('cartelas_update', {
         selectedCartelas: globalGame.selectedCartelas
@@ -838,20 +866,16 @@ io.on('connection', (socket) => {
       };
     }
 
-    // Calculate total cards and total pot
-    const playersList = Object.values(globalGame.players);
-    let totalCardsCount = 0;
-    globalGame.totalPot = 0;
-    playersList.forEach(p => {
-      totalCardsCount += p.cardNumbers.length;
-      globalGame.totalPot += p.cardNumbers.length * p.stake;
-    });
+    const summary = getRoomGameSummary(globalGame);
 
-    // Notify room of new ready player
+    // Notify room of updated players & cards
     io.to(globalGame.roomId).emit('player_joined', {
       room: globalGame.roomId,
-      total_players: totalCardsCount,
-      total_pot: globalGame.totalPot
+      total_players: summary.total_players,
+      total_cards: summary.total_cards,
+      total_pot: summary.total_pot,
+      total_prize: summary.total_prize,
+      active_cards: summary.active_cards
     });
   });
 
@@ -889,13 +913,18 @@ io.on('connection', (socket) => {
       
       globalGame.status = 'celebrating';
       
-      const totalPrize = Math.round(globalGame.totalPot * 0.8);
+      const summary = getRoomGameSummary(globalGame);
+      const totalPrize = summary.total_prize || Math.round(globalGame.totalPot * 0.8);
       
       io.to(globalGame.roomId).emit('game_ended', {
         room: globalGame.roomId,
         game_id: globalGame.gameId,
         winners: globalGame.winners,
-        total_prize: totalPrize
+        total_players: summary.total_players,
+        total_cards: summary.total_cards,
+        total_pot: summary.total_pot,
+        total_prize: totalPrize,
+        active_cards: summary.active_cards
       });
       
       if (!globalGame.streaksUpdated) {
@@ -922,17 +951,14 @@ io.on('connection', (socket) => {
           }
         }
       }
-      const playersList = Object.values(globalGame.players);
-      let totalCardsCount = 0;
-      globalGame.totalPot = 0;
-      playersList.forEach(p => {
-        totalCardsCount += p.cardNumbers.length;
-        globalGame.totalPot += p.cardNumbers.length * p.stake;
-      });
+      const summary = getRoomGameSummary(globalGame);
       io.to(globalGame.roomId).emit('player_joined', {
         room: globalGame.roomId,
-        total_players: totalCardsCount,
-        total_pot: globalGame.totalPot
+        total_players: summary.total_players,
+        total_cards: summary.total_cards,
+        total_pot: summary.total_pot,
+        total_prize: summary.total_prize,
+        active_cards: summary.active_cards
       });
       io.to(globalGame.roomId).emit('cartelas_update', {
         selectedCartelas: globalGame.selectedCartelas
